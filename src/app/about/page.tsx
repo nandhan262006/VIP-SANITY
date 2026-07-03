@@ -18,7 +18,7 @@ export async function generateMetadata() {
   const { data } = await sanityFetch<AboutData>({ query: ABOUT_QUERY, stega: false })
   return {
     title: 'About',
-    description: data?.bio,
+    description: data?.bio || 'Learn about VIP Studio — National Award Winning Wedding Photography by Vijay in Nellore.',
   }
 }
 
@@ -43,7 +43,7 @@ export default async function AboutPage() {
           <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100">
             <Image
               src={urlFor(about.profileImage).width(600).height(800).url()}
-              alt={about.photographerName || ''}
+              alt={about.photographerName || 'VIP Studio Photographer Vijay'}
               fill
               className="object-cover"
             />

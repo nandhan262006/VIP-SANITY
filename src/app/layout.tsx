@@ -3,18 +3,34 @@ import { VisualEditing } from 'next-sanity/visual-editing'
 import { draftMode } from 'next/headers'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import PopupVideo from '@/components/PopupVideo'
 import './globals.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app'),
     title: {
-      default: 'VIP Studio — Wedding Photography & Cinematography',
+      default: 'VIP Studio — Wedding Photography & Cinematography in Nellore',
       template: '%s | VIP Studio',
     },
-    description: 'National Award Winning Wedding Photography by Vijay. Based in Nellore, serving with 22+ years of experience in candid wedding photography and cinematography.',
+    description: 'National Award Winning Wedding Photography by Vijay. Based in Nellore, 22+ years of experience in candid wedding photography, cinematography, and event coverage.',
+    keywords: ['wedding photography Nellore', 'wedding cinematography', 'candid photographer', 'VIP Studio', 'Vijay photographer', 'wedding photographer Andhra Pradesh'],
     openGraph: {
       title: 'VIP Studio — Wedding Photography & Cinematography',
+      description: 'National Award Winning Wedding Photography by Vijay. Based in Nellore, serving with 22+ years of experience.',
+      url: '/',
+      siteName: 'VIP Studio',
+      locale: 'en_IN',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'VIP Studio — Wedding Photography & Cinematography',
       description: 'National Award Winning Wedding Photography in Nellore',
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }
@@ -28,12 +44,56 @@ export default async function RootLayout({
 }) {
   const isDraftMode = (await draftMode()).isEnabled
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'VIP Studio',
+    description: 'National Award Winning Wedding Photography & Cinematography',
+    image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app'}/logo.png`,
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app',
+    telephone: '+91 92999 50999',
+    email: 'contact@vipstudio.com',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '26-1-1639, beside MGB Mall, Obulreddy Nagar, Dargamitta',
+      addressLocality: 'Nellore',
+      addressRegion: 'Andhra Pradesh',
+      postalCode: '524003',
+      addressCountry: 'IN',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 14.4426,
+      longitude: 79.9865,
+    },
+    openingHoursSpecification: [
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Monday', opens: '09:30', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Tuesday', opens: '09:30', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Wednesday', opens: '09:30', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Thursday', opens: '09:30', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Friday', opens: '09:30', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Saturday', opens: '09:30', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '09:30', closes: '14:00' },
+    ],
+    sameAs: [
+      'https://www.instagram.com/vipevents_nellore/',
+      'https://www.facebook.com/VIPweddingsnellore',
+      'https://www.youtube.com/channel/UCtNRNNFqPvOB_4SK7',
+    ],
+  }
+
   return (
     <html lang="en">
       <body className="min-h-screen bg-white text-gray-900 antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Header />
         <main>{children}</main>
         <Footer />
+
+        <PopupVideo />
 
         <a
           href={`https://wa.me/${WHATSAPP_NUMBER}`}

@@ -12,9 +12,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <Image src="/logo.png" alt="VIP Studio" width={36} height={36} className="object-contain brightness-0 invert" />
-          <span className="font-bold text-lg tracking-tight text-white">VIP Studio</span>
+        <Link href="/" className="flex items-center">
+          <Image src="/logo.png" alt="VIP Studio" width={56} height={56} className="object-contain brightness-0 invert" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

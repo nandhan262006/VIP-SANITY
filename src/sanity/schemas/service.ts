@@ -30,6 +30,13 @@ export const service = defineType({
       description: 'An emoji to represent this service e.g. 💍 📸 🎥',
     }),
     defineField({
+      name: 'image',
+      title: 'Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'A background photo representing this service',
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',

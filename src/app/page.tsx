@@ -3,14 +3,15 @@ import { HOME_QUERY } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import Link from 'next/link'
 import Image from 'next/image'
+import ServicesStack from '@/components/ServicesStack'
 
 const DEFAULT_SERVICES = [
-  { _id: '1', title: 'Bridal Photography', description: 'Elegant bridal portraits that capture every detail of your special day, from the intricate jewellery to the joyous tears.', icon: '👰' },
-  { _id: '2', title: 'Engagement Photography', description: 'Beautiful engagement shoots that tell your love story against stunning backdrops.', icon: '💑' },
-  { _id: '3', title: 'Candid Photography', description: 'Natural, unposed moments that reflect genuine emotions — the laughter, the tears, the pure joy.', icon: '📸' },
-  { _id: '4', title: 'Wedding Cinematography', description: 'Cinematic wedding films that bring your most cherished memories to life with stunning visuals.', icon: '🎥' },
-  { _id: '5', title: 'Pre-Wedding Shoot', description: 'Creative pre-wedding sessions at handpicked locations that capture your unique bond.', icon: '✨' },
-  { _id: '6', title: 'Event Photography', description: 'Professional coverage for engagements, receptions, and all your special celebrations.', icon: '🎉' },
+  { _id: '1', title: 'Bridal Photography', description: 'Elegant bridal portraits that capture every detail of your special day, from the intricate jewellery to the joyous tears.', imageUrl: '/BRIDAL.png' },
+  { _id: '2', title: 'Engagement Photography', description: 'Beautiful engagement shoots that tell your love story against stunning backdrops.', imageUrl: '/ENGAGEMENT.png' },
+  { _id: '3', title: 'Candid Photography', description: 'Natural, unposed moments that reflect genuine emotions — the laughter, the tears, the pure joy.', imageUrl: '/CANDID.png' },
+  { _id: '4', title: 'Wedding Cinematography', description: 'Cinematic wedding films that bring your most cherished memories to life with stunning visuals.', imageUrl: '/WEDDING.png' },
+  { _id: '5', title: 'Pre-Wedding Shoot', description: 'Creative pre-wedding sessions at handpicked locations that capture your unique bond.', imageUrl: '/PREWEDDING.png' },
+  { _id: '6', title: 'Event Photography', description: 'Professional coverage for engagements, receptions, and all your special celebrations.', imageUrl: '/CORPERATE.png' },
 ]
 
 const WHATSAPP_NUMBER = '919299950999'
@@ -19,20 +20,29 @@ export default async function HomePage() {
   const { data } = await sanityFetch({ query: HOME_QUERY })
   const { featured, about, services: sanityServices } = data || {}
   const services = sanityServices?.length ? sanityServices : DEFAULT_SERVICES
+  const portfolioImages = [
+    '/BRIDAL.png', '/CANDID.png', '/CORPERATE.png', '/ENGAGEMENT.png',
+    '/HERO.png', '/MATERNITY.png', '/PREWEDDING.png', '/WEDDING.png',
+    '/BRIDAL.png', '/HERO.png',
+  ]
 
   return (
     <div>
-      <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-black via-black to-red">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(204,0,0,0.15),transparent_70%)]" />
+      <section className="relative h-screen flex items-center justify-center bg-black">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-red/20" />
         <div className="relative z-10 text-center px-4">
+          <h1 className="sr-only">VIP Studio — Wedding Photography & Cinematography in Nellore</h1>
           <Image
             src="/logo.png"
-            alt="VIP Studio"
+            alt="VIP Studio — Wedding Photography & Cinematography"
             width={500}
             height={200}
-            className="mx-auto mb-12 brightness-0 invert"
+            className="mx-auto !w-auto !h-auto brightness-0 invert"
             priority
           />
+          <p className="text-gray-400 text-sm md:text-base mt-4 mb-2 tracking-wider">&ldquo;Director of Wedding Photography&rdquo; &mdash; Kodak</p>
+          <p className="text-red font-semibold text-xs md:text-sm uppercase tracking-widest">National Award Winner in Wedding Photography 2010</p>
+          <p className="text-gray-500 text-xs md:text-sm mt-2 mb-12">Vijay | CEO, <span className="text-red">VIP</span> STUDIOS</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/portfolio"
@@ -53,7 +63,7 @@ export default async function HomePage() {
       </section>
 
       {about && (
-        <section className="py-24 px-4 bg-white">
+        <section className="py-24 px-4 bg-black">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-0.5 bg-red" />
@@ -61,10 +71,10 @@ export default async function HomePage() {
             </div>
             <div className="grid md:grid-cols-2 gap-16 items-center">
               <div>
-                <h2 className="text-4xl font-bold mb-6 leading-tight">
+                <h2 className="text-4xl font-bold mb-6 leading-tight text-white">
                   {about.photographerName || 'Vijay'} — <span className="text-red">{about.experience || 22}+ Years</span> of Excellence
                 </h2>
-                <p className="text-gray-600 leading-relaxed mb-6 text-lg">
+                <p className="text-gray-400 leading-relaxed mb-6 text-lg">
                   {about.bio || 'National Award Winning Wedding Photographer based in Nellore, specializing in candid wedding photography and cinematography.'}
                 </p>
                 <Link
@@ -75,7 +85,7 @@ export default async function HomePage() {
                   <span aria-hidden="true">&rarr;</span>
                 </Link>
               </div>
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-800">
                 {about.profileImage?.url ? (
                   <Image
                     src={urlFor(about.profileImage).width(600).height(750).url()}
@@ -84,7 +94,7 @@ export default async function HomePage() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-600">
                     <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   </div>
                 )}
@@ -94,35 +104,15 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section id="services" className="py-24 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-red font-semibold text-sm uppercase tracking-widest">What We Offer</span>
-            <h2 className="text-4xl font-bold mt-3 mb-4">Our Services</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">Comprehensive wedding photography and cinematography services tailored to make your special day unforgettable.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service: any) => (
-              <div
-                key={service._id}
-                className="group bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-red/20"
-              >
-                <span className="text-4xl block mb-5">{service.icon || '📸'}</span>
-                <h3 className="text-xl font-bold mb-3 group-hover:text-red transition-colors">{service.title}</h3>
-                <p className="text-gray-500 leading-relaxed text-sm">{service.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ServicesStack services={services} />
 
       {featured && featured.length > 0 && (
-        <section className="py-24 px-4 bg-white">
+        <section className="py-24 px-4 bg-black">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-12">
               <div>
                 <span className="text-red font-semibold text-sm uppercase tracking-widest">Portfolio</span>
-                <h2 className="text-4xl font-bold mt-3">Featured Work</h2>
+                <h2 className="text-4xl font-bold mt-3 text-white">Featured Work</h2>
               </div>
               <Link
                 href="/portfolio"
@@ -168,6 +158,58 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      <section className="py-24 px-4 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-red font-semibold text-sm uppercase tracking-widest">Portfolio</span>
+            <h2 className="text-4xl font-bold mt-3 text-white">Our Work</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="aspect-[4/3] rounded-xl bg-gray-800 overflow-hidden relative group cursor-pointer">
+                {portfolioImages[i] ? (
+                  <Image
+                    src={portfolioImages[i]}
+                    alt=""
+                    fill
+                    className="object-cover group-hover:scale-105 transition duration-500"
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 group-hover:scale-105 transition duration-500" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="col-span-2 md:col-start-2 md:col-span-1 aspect-[4/3] rounded-xl bg-gray-800 overflow-hidden relative group cursor-pointer">
+              {portfolioImages[9] ? (
+                <Image
+                  src={portfolioImages[9]}
+                  alt=""
+                  fill
+                  className="object-cover group-hover:scale-105 transition duration-500"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 group-hover:scale-105 transition duration-500" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
+            </div>
+          </div>
+          <div className="text-center mt-12">
+            <Link
+              href="/gallery"
+              className="bg-red text-white px-8 py-3.5 rounded-full font-medium hover:bg-red-dark transition shadow-lg shadow-red/30 inline-flex items-center gap-2"
+            >
+              View Full Gallery
+              <span aria-hidden="true">&rarr;</span>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <section className="py-24 px-4 bg-gradient-to-br from-black via-black to-red relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(204,0,0,0.2),transparent_60%)]" />

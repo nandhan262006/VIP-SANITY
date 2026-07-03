@@ -4,6 +4,12 @@ import { urlFor } from '@/sanity/lib/image'
 import Link from 'next/link'
 import Image from 'next/image'
 import { stegaClean } from '@sanity/client/stega'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Portfolio',
+  description: 'Explore our wedding photography and cinematography portfolio. Browse through bridal, engagement, candid, and event galleries by VIP Studio.',
+}
 
 export default async function PortfolioPage({
   searchParams,

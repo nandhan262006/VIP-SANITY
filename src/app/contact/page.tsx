@@ -2,7 +2,7 @@ import ContactForm from '@/components/ContactForm'
 
 export const metadata = {
   title: 'Contact',
-  description: 'Get in touch with VIP Studio for booking inquiries.',
+  description: 'Get in touch with VIP Studio for wedding photography booking inquiries. Call +91 92999 50999 or reach us on WhatsApp.',
 }
 
 export default function ContactPage() {
@@ -20,6 +20,17 @@ export default function ContactPage() {
             <div>
               <p className="font-medium text-gray-900">Location</p>
               <p>Nellore, Andhra Pradesh</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Phone / WhatsApp</p>
+              <a
+                href="https://wa.me/919299950999"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-red hover:text-red-dark transition"
+              >
+                +91 92999 50999
+              </a>
             </div>
             <div>
               <p className="font-medium text-gray-900">Instagram</p>

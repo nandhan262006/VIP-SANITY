@@ -34,7 +34,11 @@ export const HOME_QUERY = defineQuery(groq`{
     stats
   },
   "services": *[_type == "service"] | order(order asc) {
-    _id, title, description, icon
+    _id, title, description, icon,
+    "image": image.asset->{url, "lqip": metadata.lqip, "dimensions": metadata.dimensions}
+  },
+  "allGalleries": *[_type == "gallery" && defined(slug.current)] | order(date desc) {
+    "coverImage": coverImage.asset->{url}
   }
 }`)
 
@@ -51,3 +55,9 @@ export const SEO_QUERY = defineQuery(groq`{
 }`)
 
 export const CONTACT_MUTATION = groq`*[_type == "contactSubmission"]`
+
+export const ALL_IMAGES_QUERY = defineQuery(groq`*[_type == "gallery" && defined(slug.current)] | order(date desc) {
+  _id, title, "slug": slug.current,
+  "images": images[]{asset->{url, "lqip": metadata.lqip, "dimensions": metadata.dimensions}},
+  "coverImage": coverImage.asset->{url, "lqip": metadata.lqip, "dimensions": metadata.dimensions}
+}`)
