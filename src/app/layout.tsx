@@ -22,11 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'VIP Studio',
       locale: 'en_IN',
       type: 'website',
+      images: [{ url: '/logo.png', width: 512, height: 512, alt: 'VIP Studio Logo' }],
     },
     twitter: {
       card: 'summary_large_image',
       title: 'VIP Studio — Wedding Photography & Cinematography',
       description: 'National Award Winning Wedding Photography in Nellore',
+      images: ['/logo.png'],
     },
     robots: {
       index: true,

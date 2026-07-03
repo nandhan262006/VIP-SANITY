@@ -50,6 +50,9 @@ export default function Footer() {
               <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="block hover:text-red transition">
                 WhatsApp
               </a>
+              <a href="https://maps.app.goo.gl/VEJbmw21SPY4QaDY9" target="_blank" rel="noopener noreferrer" className="block hover:text-red transition">
+                Google Maps
+              </a>
             </div>
           </div>
         </div>
@@ -57,7 +60,9 @@ export default function Footer() {
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} VIP Studio. All rights reserved.</p>
           <div className="flex gap-6">
-            <span>Nellore, Andhra Pradesh</span>
+            <a href="https://maps.app.goo.gl/VEJbmw21SPY4QaDY9" target="_blank" rel="noopener noreferrer" className="hover:text-red transition">
+              Nellore, Andhra Pradesh
+            </a>
             <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="hover:text-red transition">
               +91 92999 50999
             </a>
