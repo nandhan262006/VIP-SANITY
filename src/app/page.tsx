@@ -211,6 +211,28 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="py-24 px-4 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-red font-semibold text-sm uppercase tracking-widest">Location</span>
+            <h2 className="text-4xl font-bold mt-3 text-white">Find Us</h2>
+            <p className="text-gray-400 mt-3">26-1-1639, beside MGB Mall, Obulreddy Nagar, Dargamitta, Nellore — 524003</p>
+          </div>
+          <div className="rounded-2xl overflow-hidden shadow-lg bg-gray-900">
+            <iframe
+              src="https://www.google.com/maps?q=26-1-1639+beside+MGB+Mall+Obulreddy+Nagar+Dargamitta+Nellore+Andhra+Pradesh+524003&output=embed"
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="VIP Studio Location in Nellore"
+            />
+          </div>
+        </div>
+      </section>
+
       <section className="py-24 px-4 bg-gradient-to-br from-black via-black to-red relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(204,0,0,0.2),transparent_60%)]" />
         <div className="relative z-10 max-w-3xl mx-auto text-center text-white">
