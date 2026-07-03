@@ -1,4 +1,3 @@
-import { client } from '@/sanity/lib/client'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
@@ -9,7 +8,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const doc = await client.create({
+    const { client } = await import('@/sanity/lib/client')
+
+    const doc = await client().create({
       _type: 'contactSubmission',
       name: body.name,
       email: body.email,

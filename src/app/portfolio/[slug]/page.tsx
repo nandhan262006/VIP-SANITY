@@ -7,23 +7,37 @@ import { notFound } from 'next/navigation'
 import { stegaClean } from '@sanity/client/stega'
 
 export async function generateStaticParams() {
-  const { data } = await sanityFetch({ query: GALLERY_SLUGS_QUERY, perspective: 'published', stega: false })
-  return (data || []).map((g: any) => ({ slug: g.slug }))
+  try {
+    const { data } = await sanityFetch({ query: GALLERY_SLUGS_QUERY, perspective: 'published', stega: false })
+    return (data || []).map((g: any) => ({ slug: g.slug }))
+  } catch {
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const { data } = await sanityFetch({ query: GALLERY_QUERY, params: { slug }, stega: false })
-  if (!data) return {}
-  return {
-    title: `${data.title} | VIP Studio`,
-    description: data.description,
+  try {
+    const { data } = await sanityFetch({ query: GALLERY_QUERY, params: { slug }, stega: false })
+    if (!data) return {}
+    return {
+      title: `${data.title} | VIP Studio`,
+      description: data.description,
+    }
+  } catch {
+    return { title: 'Portfolio | VIP Studio' }
   }
 }
 
 export default async function GalleryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const { data: gallery } = await sanityFetch({ query: GALLERY_QUERY, params: { slug } })
+  let gallery: any = null
+  try {
+    const res = await sanityFetch({ query: GALLERY_QUERY, params: { slug } })
+    gallery = res.data
+  } catch {
+    gallery = null
+  }
 
   if (!gallery) notFound()
 

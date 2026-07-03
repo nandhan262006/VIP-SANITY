@@ -15,19 +15,32 @@ type AboutData = {
 }
 
 export async function generateMetadata() {
-  const { data } = await sanityFetch<AboutData>({ query: ABOUT_QUERY, stega: false })
-  return {
-    title: 'About',
-    description: data?.bio || 'Learn about VIP Studio — National Award Winning Wedding Photography by Vijay in Nellore.',
-    openGraph: {
-      title: `About ${data?.photographerName || 'VIP Studio'} | Wedding Photography Nellore`,
-      description: data?.bio?.slice(0, 160) || 'National Award Winning Wedding Photographer based in Nellore with 22+ years of experience.',
-    },
+  try {
+    const { data } = await sanityFetch<AboutData>({ query: ABOUT_QUERY, stega: false })
+    return {
+      title: 'About',
+      description: data?.bio || 'Learn about VIP Studio — National Award Winning Wedding Photography by Vijay in Nellore.',
+      openGraph: {
+        title: `About ${data?.photographerName || 'VIP Studio'} | Wedding Photography Nellore`,
+        description: data?.bio?.slice(0, 160) || 'National Award Winning Wedding Photographer based in Nellore with 22+ years of experience.',
+      },
+    }
+  } catch {
+    return {
+      title: 'About',
+      description: 'Learn about VIP Studio — National Award Winning Wedding Photography by Vijay in Nellore.',
+    }
   }
 }
 
 export default async function AboutPage() {
-  const { data: about } = await sanityFetch<AboutData>({ query: ABOUT_QUERY })
+  let about: AboutData | null = null
+  try {
+    const res = await sanityFetch<AboutData>({ query: ABOUT_QUERY })
+    about = res.data
+  } catch {
+    about = null
+  }
 
   if (!about) {
     return (

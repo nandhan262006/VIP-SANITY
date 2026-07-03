@@ -1,12 +1,17 @@
-import { client } from '@/sanity/lib/client'
 import type { MetadataRoute } from 'next'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const galleries = await client.fetch<{ slug: string; updated: string }[]>(
-    `*[_type == "gallery" && defined(slug.current)]{"slug": slug.current, "updated": _updatedAt} | order(date desc)`
-  )
+  let galleries: { slug: string; updated: string }[] = []
+  try {
+    const { client } = await import('@/sanity/lib/client')
+    galleries = await client().fetch<{ slug: string; updated: string }[]>(
+      `*[_type == "gallery" && defined(slug.current)]{"slug": slug.current, "updated": _updatedAt} | order(date desc)`
+    )
+  } catch {
+    // Sanity env vars not configured — return static pages only
+  }
 
   const staticPages = [
     { url: `${BASE_URL}/`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 1 },

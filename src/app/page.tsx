@@ -17,7 +17,13 @@ const DEFAULT_SERVICES = [
 const WHATSAPP_NUMBER = '919299950999'
 
 export default async function HomePage() {
-  const { data } = await sanityFetch({ query: HOME_QUERY })
+  let data: any = {}
+  try {
+    const res = await sanityFetch({ query: HOME_QUERY })
+    data = res.data || {}
+  } catch {
+    data = {}
+  }
   const { featured, about, services: sanityServices } = data || {}
   const services = sanityServices?.length ? sanityServices : DEFAULT_SERVICES
   const portfolioImages = [

@@ -15,8 +15,13 @@ export const metadata: Metadata = {
 }
 
 export default async function GalleryPage() {
-  const { data } = await sanityFetch({ query: ALL_IMAGES_QUERY })
-  const galleries: any[] = data || []
+  let galleries: any[] = []
+  try {
+    const res = await sanityFetch({ query: ALL_IMAGES_QUERY })
+    galleries = res.data || []
+  } catch {
+    galleries = []
+  }
 
   const allImages = galleries.flatMap((g: any) =>
     (g.images || []).map((img: any) => ({

@@ -15,7 +15,7 @@ export async function sanityFetch<Q = any>({
   stega,
   perspective,
 }: SanityFetchOptions): Promise<{ data: Q }> {
-  const data = await client.fetch<Q>(query, params || {}, {
+  const data = await client().fetch<Q>(query, params || {}, {
     stega: stega ?? false,
     perspective: perspective ?? 'published',
   })

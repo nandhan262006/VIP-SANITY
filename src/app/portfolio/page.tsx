@@ -21,7 +21,13 @@ export default async function PortfolioPage({
   searchParams: Promise<{ category?: string }>
 }) {
   const { category: categoryParam } = await searchParams
-  const { data } = await sanityFetch({ query: GALLERIES_QUERY })
+  let data: any = {}
+  try {
+    const res = await sanityFetch({ query: GALLERIES_QUERY })
+    data = res.data || {}
+  } catch {
+    data = {}
+  }
   const { categories, galleries } = data || {}
 
   const activeCategory = stegaClean(categoryParam || '')
