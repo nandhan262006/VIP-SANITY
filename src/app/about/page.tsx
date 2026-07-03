@@ -19,6 +19,10 @@ export async function generateMetadata() {
   return {
     title: 'About',
     description: data?.bio || 'Learn about VIP Studio — National Award Winning Wedding Photography by Vijay in Nellore.',
+    openGraph: {
+      title: `About ${data?.photographerName || 'VIP Studio'} | Wedding Photography Nellore`,
+      description: data?.bio?.slice(0, 160) || 'National Award Winning Wedding Photographer based in Nellore with 22+ years of experience.',
+    },
   }
 }
 

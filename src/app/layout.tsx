@@ -32,6 +32,9 @@ export async function generateMetadata(): Promise<Metadata> {
       index: true,
       follow: true,
     },
+    alternates: {
+      canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app',
+    },
   }
 }
 

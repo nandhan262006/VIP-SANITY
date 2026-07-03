@@ -8,6 +8,10 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Gallery',
   description: 'Browse our complete wedding photography and cinematography gallery by VIP Studio.',
+  openGraph: {
+    title: 'Gallery | VIP Studio Wedding Photography',
+    description: 'View our complete collection of wedding photography and cinematography work in Nellore.',
+  },
 }
 
 export default async function GalleryPage() {

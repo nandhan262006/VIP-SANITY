@@ -1,8 +1,13 @@
 import ContactForm from '@/components/ContactForm'
+import type { Metadata } from 'next'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Contact',
   description: 'Get in touch with VIP Studio for wedding photography booking inquiries. Call +91 92999 50999 or reach us on WhatsApp.',
+  openGraph: {
+    title: 'Contact VIP Studio | Wedding Photography Nellore',
+    description: 'Book your wedding photography with National Award Winner Vijay. Located in Nellore, Andhra Pradesh.',
+  },
 }
 
 export default function ContactPage() {
@@ -55,9 +60,33 @@ export default function ContactPage() {
               </a>
             </div>
           </div>
+          <div className="mt-6">
+            <p className="font-medium text-gray-900 mb-2">Find Us</p>
+            <a
+              href="https://maps.app.goo.gl/VEJbmw21SPY4QaDY9"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red hover:text-red-dark transition text-sm"
+            >
+              Open in Google Maps &rarr;
+            </a>
+          </div>
         </div>
 
         <ContactForm />
+      </div>
+
+      <div className="mt-12 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
+        <iframe
+          src="https://www.google.com/maps?q=26-1-1639+beside+MGB+Mall+Obulreddy+Nagar+Dargamitta+Nellore+Andhra+Pradesh+524003&output=embed"
+          width="100%"
+          height="350"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title="VIP Studio Location"
+        />
       </div>
     </div>
   )
