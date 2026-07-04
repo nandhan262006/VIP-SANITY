@@ -13,12 +13,6 @@ const DEFAULT_SERVICES = [
 
 const WHATSAPP_NUMBER = '919299950999'
 
-const portfolioImages = [
-  '/BRIDAL.png', '/CANDID.png', '/CORPERATE.png', '/ENGAGEMENT.png',
-  '/HERO.png', '/MATERNITY.png', '/PREWEDDING.png', '/WEDDING.png',
-  '/BRIDAL.png', '/HERO.png',
-]
-
 export default async function HomePage() {
   return (
     <div>
@@ -73,14 +67,14 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
+            {['/BRIDAL.png', '/CANDID.png', '/ENGAGEMENT.png', '/WEDDING.png', '/PREWEDDING.png', '/CORPERATE.png'].map((src, i) => (
               <Link
                 key={i}
                 href="/portfolio"
                 className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-800"
               >
                 <Image
-                  src={portfolioImages[i]}
+                  src={src}
                   alt="Wedding Photography"
                   fill
                   className="object-cover group-hover:scale-105 transition duration-500"
@@ -95,64 +89,12 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
-          <div className="text-center mt-10 md:hidden">
+          <div className="text-center mt-10">
             <Link
               href="/portfolio"
-              className="inline-flex items-center gap-2 text-red font-medium"
+              className="inline-flex items-center gap-2 text-red font-medium hover:text-red-dark transition"
             >
               View All Galleries <span aria-hidden="true">&rarr;</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24 px-4 bg-black">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="text-red font-semibold text-sm uppercase tracking-widest">Portfolio</span>
-            <h2 className="text-4xl font-bold mt-3 text-white">Our Work</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="aspect-[4/3] rounded-xl bg-gray-800 overflow-hidden relative group cursor-pointer">
-                {portfolioImages[i] ? (
-                  <Image
-                    src={portfolioImages[i]}
-                    alt=""
-                    fill
-                    className="object-cover group-hover:scale-105 transition duration-500"
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 group-hover:scale-105 transition duration-500" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="col-span-2 md:col-start-2 md:col-span-1 aspect-[4/3] rounded-xl bg-gray-800 overflow-hidden relative group cursor-pointer">
-              {portfolioImages[9] ? (
-                <Image
-                  src={portfolioImages[9]}
-                  alt=""
-                  fill
-                  className="object-cover group-hover:scale-105 transition duration-500"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 group-hover:scale-105 transition duration-500" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
-            </div>
-          </div>
-          <div className="text-center mt-12">
-            <Link
-              href="/gallery"
-              className="bg-red text-white px-8 py-3.5 rounded-full font-medium hover:bg-red-dark transition shadow-lg shadow-red/30 inline-flex items-center gap-2"
-            >
-              View Full Gallery
-              <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>
         </div>
