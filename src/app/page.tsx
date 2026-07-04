@@ -11,12 +11,6 @@ const DEFAULT_SERVICES = [
   { _id: '6', title: 'Event Photography', description: 'Professional coverage for engagements, receptions, and all your special celebrations.', imageUrl: '/CORPERATE.png' },
 ]
 
-const STATIC_ABOUT = {
-  photographerName: 'Vijay',
-  experience: 22,
-  bio: 'National Award Winning Wedding Photographer based in Nellore, specializing in candid wedding photography and cinematography with over 22+ years of excellence.',
-}
-
 const WHATSAPP_NUMBER = '919299950999'
 
 const portfolioImages = [
@@ -58,40 +52,6 @@ export default async function HomePage() {
             >
               Book via WhatsApp
             </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24 px-4 bg-black">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-8 h-0.5 bg-red" />
-            <span className="text-red font-semibold text-sm uppercase tracking-widest">About</span>
-          </div>
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl font-bold mb-6 leading-tight text-white">
-                {STATIC_ABOUT.photographerName} — <span className="text-red">{STATIC_ABOUT.experience}+ Years</span> of Excellence
-              </h2>
-              <p className="text-gray-400 leading-relaxed mb-6 text-lg">
-                {STATIC_ABOUT.bio}
-              </p>
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 text-red font-medium hover:text-red-dark transition"
-              >
-                Know More
-                <span aria-hidden="true">&rarr;</span>
-              </Link>
-            </div>
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-800">
-              <Image
-                src="/HERO.png"
-                alt="Vijay — VIP Studio"
-                fill
-                className="object-cover"
-              />
-            </div>
           </div>
         </div>
       </section>
