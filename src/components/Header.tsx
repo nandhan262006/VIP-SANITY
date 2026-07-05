@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 
 const WHATSAPP_NUMBER = '919299950999'
+const PHONE_NUMBER = '+919299950999'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -29,6 +30,12 @@ export default function Header() {
             className="bg-red text-white text-sm px-5 py-2 rounded-full font-medium hover:bg-red-dark transition"
           >
             WhatsApp
+          </a>
+          <a
+            href={`tel:${PHONE_NUMBER}`}
+            className="border-2 border-red text-red text-sm px-5 py-2 rounded-full font-medium hover:bg-red hover:text-white transition"
+          >
+            Call Now
           </a>
         </nav>
 
@@ -62,6 +69,13 @@ export default function Header() {
             onClick={() => setMenuOpen(false)}
           >
             WhatsApp Booking
+          </a>
+          <a
+            href={`tel:${PHONE_NUMBER}`}
+            className="block text-sm text-red font-medium"
+            onClick={() => setMenuOpen(false)}
+          >
+            Call Now
           </a>
         </div>
       )}

@@ -62,6 +62,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const WHATSAPP_NUMBER = '919299950999'
+const PHONE_NUMBER = '+919299950999'
 
 export default async function RootLayout({
   children,
@@ -157,6 +158,16 @@ export default async function RootLayout({
         <Footer />
 
         <PopupVideo />
+
+        <a
+          href={`tel:${PHONE_NUMBER}`}
+          className="fixed bottom-6 right-20 z-50 bg-red text-white p-3.5 rounded-full shadow-lg hover:bg-red-dark transition shadow-red/40 hover:shadow-xl hover:shadow-red/50"
+          aria-label="Call VIP Studio"
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.25 1.01l-2.2 2.2z" />
+          </svg>
+        </a>
 
         <a
           href={`https://wa.me/${WHATSAPP_NUMBER}`}
