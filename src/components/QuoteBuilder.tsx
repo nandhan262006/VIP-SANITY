@@ -16,7 +16,7 @@ function fmt(n: number) {
 function getSummary(visibleSteps: Step[], quantities: Record<string, number>, selections: Record<string, number>) {
   const items: { name: string; qty: number; price: number }[] = []
   for (const step of visibleSteps) {
-    if (step.type === 'final' || step.type === 'welcome') continue
+    if (step.type === 'final' || step.type === 'welcome' || step.type === 'yes-no') continue
     for (const item of step.items) {
       const qty = quantities[item.id] || selections[item.id] || 0
       if (qty > 0) {
@@ -179,11 +179,11 @@ export default function QuoteBuilder() {
 
   const next = useCallback(() => {
     if (!canGo) return
-    if (stepIdx < visibleSteps.length - 1) { setStepIdx((i) => i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+    if (stepIdx < visibleSteps.length - 1) { setStepIdx((i) => i + 1) }
   }, [canGo, stepIdx, visibleSteps.length])
 
   const prev = useCallback(() => {
-    if (stepIdx > 0) { setStepIdx((i) => i - 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+    if (stepIdx > 0) { setStepIdx((i) => i - 1) }
   }, [stepIdx])
 
   const doPdf = useCallback(() => {
