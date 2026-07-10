@@ -1,146 +1,173 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
+import { Button, Label, TextInput, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
+import FileUpload from '@/components/admin/FileUpload'
+import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
-type Item = { id: number; slug: string; title: string; description?: string; category?: string; coverImage?: string; date?: string }
+type Item = { id: number; slug: string; title: string; description?: string; category?: string; coverImage?: string; coverImagePublicId?: string; date?: string }
 
 export default function PortfolioAdminPage() {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState({ slug: '', title: '', description: '', category: '', coverImage: '', date: '' })
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '' })
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/portfolio').then(r => r.json()).then(d => { setItems(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-    setUploading(true)
-    const fd = new FormData()
-    fd.append('file', f)
-    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    setForm(p => ({ ...p, coverImage: data.url }))
-    setUploading(false)
-  }
+  useEffect(() => {
+    fetch('/api/admin/portfolio')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setItems(d))
+      .catch(() => showToast('Failed to load portfolio', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
 
   async function handleSave() {
-    if (editId) {
-      await fetch(`/api/admin/portfolio/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-    } else {
-      await fetch('/api/admin/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    setSaving(true)
+    try {
+      const body = { ...form, order: 0 }
+      const url = editId ? `/api/admin/portfolio/${editId}` : '/api/admin/portfolio'
+      const method = editId ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      setShowForm(false); setEditId(null); setForm({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '' })
+      const refreshed = await fetch('/api/admin/portfolio')
+      setItems(await refreshed.json())
+      showToast(editId ? 'Portfolio item updated' : 'Portfolio item created')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setForm({ slug: '', title: '', description: '', category: '', coverImage: '', date: '' }); setFile(null)
-    const res = await fetch('/api/admin/portfolio')
-    setItems(await res.json())
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm('Delete this portfolio item?')) return
-    await fetch(`/api/admin/portfolio/${id}`, { method: 'DELETE' })
-    setItems(items.filter(i => i.id !== id))
+  async function handleDelete() {
+    if (!deleteId) return
+    const item = items.find(i => i.id === deleteId)
+    try {
+      await fetch(`/api/admin/portfolio/${deleteId}`, { method: 'DELETE' })
+      if (item?.coverImagePublicId) {
+        await fetch('/api/admin/delete-file', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicId: item.coverImagePublicId }) })
+      }
+      setItems(items.filter(i => i.id !== deleteId))
+      showToast('Portfolio item deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   function startEdit(s: Item) {
-    setEditId(s.id); setForm({ slug: s.slug, title: s.title, description: s.description || '', category: s.category || '', coverImage: s.coverImage || '', date: s.date || '' }); setShowForm(true)
+    setEditId(s.id)
+    setForm({ slug: s.slug, title: s.title, description: s.description || '', category: s.category || '', coverImage: s.coverImage || '', coverImagePublicId: s.coverImagePublicId || '', date: s.date || '' })
+    setShowForm(true)
   }
 
   if (loading) return <div className="text-gray-400 text-sm p-8">Loading...</div>
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Portfolio</h1>
-        <button onClick={() => { setShowForm(true); setEditId(null); setForm({ slug: '', title: '', description: '', category: '', coverImage: '', date: '' }); setFile(null) }} className="bg-red text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-dark transition">Add Item</button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Portfolio</h1>
+        <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '' }) }}>
+          Add Item
+        </Button>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
-            <h2 className="font-bold text-gray-900 mb-4">{editId ? 'Edit Portfolio Item' : 'New Portfolio Item'}</h2>
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Title</label>
-                <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Slug</label>
-                <input value={form.slug} onChange={e => setForm(p => ({ ...p, slug: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Category</label>
-                <input value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Description</label>
-                <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Date</label>
-                <input value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="2025-12-01" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Upload Cover Image</label>
-                <input type="file" accept="image/*" onChange={handleUpload} className="w-full text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Or Cover Image URL</label>
-                <input value={form.coverImage} onChange={e => setForm(p => ({ ...p, coverImage: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              {form.coverImage && (
-                <div className="relative w-full h-28 rounded-lg overflow-hidden bg-gray-100">
-                  <Image src={form.coverImage} alt="" fill className="object-cover" />
-                </div>
-              )}
+      <Modal show={showForm} onClose={() => setShowForm(false)} size="lg">
+        <ModalHeader>{editId ? 'Edit Portfolio Item' : 'New Portfolio Item'}</ModalHeader>
+        <ModalBody>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <div>
+              <Label>Title</Label>
+              <TextInput value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2 rounded-lg border border-gray-300 text-sm text-gray-600">Cancel</button>
-              <button onClick={handleSave} disabled={!form.title || !form.slug || uploading} className="flex-1 py-2 rounded-lg bg-red text-white text-sm font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Save'}</button>
+            <div>
+              <Label>Slug</Label>
+              <TextInput value={form.slug} onChange={e => setForm(p => ({ ...p, slug: e.target.value }))} />
             </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Image</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Title</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Category</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {items.map(item => (
-              <tr key={item.id}>
-                <td className="px-4 py-3">
-                  <div className="relative w-14 h-14 rounded overflow-hidden bg-gray-100">
-                    {item.coverImage && <Image src={item.coverImage} alt="" fill className="object-cover" />}
-                  </div>
-                </td>
-                <td className="px-4 py-3 font-medium text-gray-900">{item.title}</td>
-                <td className="px-4 py-3 text-gray-500">{item.category || '—'}</td>
-                <td className="px-4 py-3 text-gray-400">{item.date || '—'}</td>
-                <td className="px-4 py-3 text-right">
-                  <button onClick={() => startEdit(item)} className="text-red text-xs font-medium hover:underline mr-3">Edit</button>
-                  <button onClick={() => handleDelete(item.id)} className="text-gray-400 text-xs hover:text-red transition">Delete</button>
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400 text-sm">No portfolio items yet</td></tr>
+            <div>
+              <Label>Category</Label>
+              <TextInput value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </div>
+            <div>
+              <Label>Date</Label>
+              <TextInput value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} placeholder="2025-12-01" />
+            </div>
+            <FileUpload currentUrl={form.coverImage} onUpload={(url, publicId) => setForm(p => ({ ...p, coverImage: url, coverImagePublicId: publicId || '' }))} />
+            <div>
+              <Label>Or Cover Image URL</Label>
+              <TextInput value={form.coverImage} onChange={e => setForm(p => ({ ...p, coverImage: e.target.value, coverImagePublicId: '' }))} />
+            </div>
+            {form.coverImage && (
+              <div className="relative w-full h-28 rounded-lg overflow-hidden bg-gray-100">
+                <Image src={form.coverImage} alt="" fill className="object-cover" />
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!form.title || !form.slug || saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      <DeleteConfirm open={deleteId !== null} onConfirm={handleDelete} onCancel={() => setDeleteId(null)} itemName="this portfolio item" />
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Image</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Title</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Category</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Date</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {items.map(item => (
+                <tr key={item.id}>
+                  <td className="px-4 py-3">
+                    <div className="relative w-14 h-14 rounded overflow-hidden bg-gray-100">
+                      {item.coverImage && <Image src={item.coverImage} alt="" fill className="object-cover" />}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{item.title}</td>
+                  <td className="px-4 py-3 text-gray-500">{item.category || '—'}</td>
+                  <td className="px-4 py-3 text-gray-400">{item.date || '—'}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button type="button" className="text-red-600 text-xs font-medium hover:underline mr-3" onClick={() => startEdit(item)}>Edit</button>
+                    <button type="button" className="text-gray-500 text-xs hover:text-red-600" onClick={() => setDeleteId(item.id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400 text-sm">No portfolio items yet</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

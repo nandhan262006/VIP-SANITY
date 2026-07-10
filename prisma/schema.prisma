@@ -17,16 +17,17 @@ model ContactSubmission {
 }
 
 model PortfolioItem {
-  id          Int      @id @default(autoincrement())
-  slug        String   @unique
-  title       String
-  description String?
-  category    String?
-  coverImage  String?
-  date        String?
-  images      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  slug                String   @unique
+  title               String
+  description         String?
+  category            String?
+  coverImage          String?
+  coverImagePublicId  String?
+  date                String?
+  images              String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model HeroSlide {
@@ -50,6 +51,7 @@ model Service {
 model GalleryImage {
   id           Int      @id @default(autoincrement())
   src          String
+  srcPublicId  String?
   galleryTitle String
   gallerySlug  String
   order        Int      @default(0)

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell, TextInput } from 'flowbite-react'
 
 type Setting = { key: string; value: string }
 
@@ -49,46 +50,46 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Site Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Site Settings</h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Setting</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Value</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeadCell>Setting</TableHeadCell>
+              <TableHeadCell>Value</TableHeadCell>
+              <TableHeadCell className="text-right">Actions</TableHeadCell>
+            </TableRow>
+          </TableHead>
+          <TableBody className="divide-y">
             {settings.map(s => (
-              <tr key={s.key}>
-                <td className="px-4 py-3 font-medium text-gray-900">{SETTING_LABELS[s.key] || s.key}</td>
-                <td className="px-4 py-3">
+              <TableRow key={s.key}>
+                <TableCell className="font-medium">{SETTING_LABELS[s.key] || s.key}</TableCell>
+                <TableCell>
                   {editKey === s.key ? (
-                    <div className="flex gap-2">
-                      <input
+                    <div className="flex gap-2 items-center">
+                      <TextInput
                         value={editValue}
                         onChange={e => setEditValue(e.target.value)}
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
-                        autoFocus
+                        className="flex-1"
+                        sizing="sm"
                       />
-                      <button onClick={() => handleSave(s.key)} disabled={saving} className="text-xs bg-red text-white px-3 py-1.5 rounded font-medium">Save</button>
-                      <button onClick={() => setEditKey(null)} className="text-xs text-gray-500 px-2">Cancel</button>
+                      <Button size="xs" color="red" onClick={() => handleSave(s.key)} disabled={saving}>Save</Button>
+                      <Button size="xs" color="gray" onClick={() => setEditKey(null)}>Cancel</Button>
                     </div>
                   ) : (
                     <span className="text-gray-500 truncate max-w-[300px] block">{s.value}</span>
                   )}
-                </td>
-                <td className="px-4 py-3 text-right">
+                </TableCell>
+                <TableCell className="text-right">
                   {editKey !== s.key && (
-                    <button onClick={() => { setEditKey(s.key); setEditValue(s.value) }} className="text-red text-xs font-medium hover:underline">Edit</button>
+                    <button type="button" className="text-red-600 text-xs font-medium hover:underline" onClick={() => { setEditKey(s.key); setEditValue(s.value) }}>Edit</button>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )

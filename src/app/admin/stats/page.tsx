@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Button, Card, Label, TextInput, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
+import DeleteConfirm from '@/components/admin/DeleteConfirm'
 
 type Stat = { id: number; number: string; label: string; desc: string }
 
@@ -10,6 +12,7 @@ export default function StatsPage() {
   const [form, setForm] = useState({ number: '', label: '', desc: '' })
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/stats').then(r => r.json()).then(d => { setItems(d); setLoading(false) })
@@ -27,18 +30,15 @@ export default function StatsPage() {
     setItems(await res.json())
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm('Delete this stat?')) return
-    await fetch(`/api/admin/stats/${id}`, { method: 'DELETE' })
-    setItems(items.filter(i => i.id !== id))
+  async function handleDelete() {
+    if (!deleteId) return
+    await fetch(`/api/admin/stats/${deleteId}`, { method: 'DELETE' })
+    setItems(items.filter(i => i.id !== deleteId))
+    setDeleteId(null)
   }
 
   function startEdit(s: Stat) {
     setEditId(s.id); setForm({ number: s.number, label: s.label, desc: s.desc }); setShowForm(true)
-  }
-
-  function updateField(field: keyof typeof form, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }))
   }
 
   if (loading) return <div className="text-gray-400 text-sm p-8">Loading...</div>
@@ -46,47 +46,49 @@ export default function StatsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Stats</h1>
-        <button onClick={() => { setShowForm(true); setEditId(null); setForm({ number: '', label: '', desc: '' }) }} className="bg-red text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-dark transition">Add Stat</button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Stats</h1>
+        <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ number: '', label: '', desc: '' }) }}>
+          Add Stat
+        </Button>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-            <h2 className="font-bold text-gray-900 mb-4">{editId ? 'Edit Stat' : 'New Stat'}</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Number</label>
-                <input value={form.number} onChange={e => updateField('number', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 25+" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Label</label>
-                <input value={form.label} onChange={e => updateField('label', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Years of Experience" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Description</label>
-                <input value={form.desc} onChange={e => updateField('desc', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Serving Nellore since 2000" />
-              </div>
+      <Modal show={showForm} onClose={() => setShowForm(false)} size="md">
+        <ModalHeader>{editId ? 'Edit Stat' : 'New Stat'}</ModalHeader>
+        <ModalBody>
+          <div className="space-y-4">
+            <div>
+              <Label>Number</Label>
+              <TextInput value={form.number} onChange={e => setForm(p => ({ ...p, number: e.target.value }))} placeholder="e.g. 25+" />
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2 rounded-lg border border-gray-300 text-sm text-gray-600">Cancel</button>
-              <button onClick={handleSave} disabled={!form.number || !form.label} className="flex-1 py-2 rounded-lg bg-red text-white text-sm font-medium disabled:opacity-50">Save</button>
+            <div>
+              <Label>Label</Label>
+              <TextInput value={form.label} onChange={e => setForm(p => ({ ...p, label: e.target.value }))} placeholder="e.g. Years of Experience" />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <TextInput value={form.desc} onChange={e => setForm(p => ({ ...p, desc: e.target.value }))} placeholder="e.g. Serving Nellore since 2000" />
             </div>
           </div>
-        </div>
-      )}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="gray" onClick={() => setShowForm(false)}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!form.number || !form.label}>Save</Button>
+        </ModalFooter>
+      </Modal>
+
+      <DeleteConfirm open={deleteId !== null} onConfirm={handleDelete} onCancel={() => setDeleteId(null)} itemName="this stat" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map(s => (
-          <div key={s.id} className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="text-3xl font-bold text-red mb-1">{s.number}</div>
-            <div className="font-semibold text-gray-900 text-sm">{s.label}</div>
+          <Card key={s.id}>
+            <div className="text-3xl font-bold text-red-600 mb-1">{s.number}</div>
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">{s.label}</div>
             <div className="text-gray-500 text-xs mt-1">{s.desc}</div>
             <div className="mt-3 flex gap-2">
-              <button onClick={() => startEdit(s)} className="text-xs text-red font-medium">Edit</button>
-              <button onClick={() => handleDelete(s.id)} className="text-xs text-gray-400 hover:text-red">Delete</button>
+              <button type="button" className="text-red-600 text-xs font-medium" onClick={() => startEdit(s)}>Edit</button>
+              <button type="button" className="text-gray-500 text-xs hover:text-red-600" onClick={() => setDeleteId(s.id)}>Delete</button>
             </div>
-          </div>
+          </Card>
         ))}
         {items.length === 0 && (
           <div className="col-span-full text-center text-gray-400 text-sm py-12">No stats yet</div>

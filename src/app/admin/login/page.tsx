@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button, Card, Label, TextInput } from 'flowbite-react'
+import { ThemeModeScript } from 'flowbite-react'
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
@@ -36,42 +38,38 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-gray-500 text-sm mt-1">VIP Studio Dashboard</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red focus:outline-none text-sm"
-              autoFocus
-            />
+    <>
+      <ThemeModeScript />
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4">
+        <Card className="w-full max-w-sm">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Login</h1>
+            <p className="text-gray-500 text-sm mt-1">VIP Studio Dashboard</p>
           </div>
 
-          {error && (
-            <p className="text-red-600 text-sm text-center">{error}</p>
-          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="password" className="mb-2 block">Password</Label>
+              <TextInput
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-red text-white py-2.5 rounded-lg font-medium hover:bg-red-dark transition disabled:opacity-50"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+            {error && (
+              <p className="text-red-600 text-sm text-center">{error}</p>
+            )}
+
+            <Button type="submit" color="red" disabled={loading} className="w-full">
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+        </Card>
       </div>
-    </div>
+    </>
   )
 }

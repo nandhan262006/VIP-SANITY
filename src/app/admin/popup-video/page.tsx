@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Button, Card, Label, TextInput, ToggleSwitch } from 'flowbite-react'
+import FileUpload from '@/components/admin/FileUpload'
 
 export default function PopupVideoPage() {
   const [form, setForm] = useState({ videoUrl: '', enabled: true, delay: 10 })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     fetch('/api/admin/popup-video')
@@ -19,19 +19,6 @@ export default function PopupVideoPage() {
       })
       .catch(() => setLoading(false))
   }, [])
-
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-    setUploading(true)
-    const fd = new FormData()
-    fd.append('file', f)
-    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    setForm(p => ({ ...p, videoUrl: data.url }))
-    setUploading(false)
-  }
 
   async function handleSave() {
     setSaving(true)
@@ -49,54 +36,50 @@ export default function PopupVideoPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Popup Video</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Popup Video</h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-600">Enabled</label>
-            <button
-              onClick={() => setForm(p => ({ ...p, enabled: !p.enabled }))}
-              className={`relative w-10 h-5 rounded-full transition ${form.enabled ? 'bg-red' : 'bg-gray-300'}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition ${form.enabled ? 'translate-x-5' : ''}`} />
-            </button>
-          </div>
+      <Card className="max-w-lg">
+        <div className="space-y-5">
+          <ToggleSwitch
+            label="Enabled"
+            checked={form.enabled}
+            onChange={val => setForm(p => ({ ...p, enabled: val }))}
+          />
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Delay (seconds)</label>
-            <input
+            <Label className="mb-2 block">Delay (seconds)</Label>
+            <TextInput
               type="number"
               value={form.delay}
               onChange={e => setForm(p => ({ ...p, delay: Number(e.target.value) }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Upload Video</label>
-            <input type="file" accept="video/*" onChange={handleUpload} className="w-full text-sm" />
-          </div>
+          <FileUpload
+            accept="video/*"
+            currentUrl={form.videoUrl}
+            onUpload={url => setForm(p => ({ ...p, videoUrl: url }))}
+            label="Upload Video"
+          />
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Or Video URL</label>
-            <input
+            <Label className="mb-2 block">Or Video URL</Label>
+            <TextInput
               value={form.videoUrl}
               onChange={e => setForm(p => ({ ...p, videoUrl: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               placeholder="/POPUP.mp4"
             />
           </div>
 
-          <button
+          <Button
+            color="red"
             onClick={handleSave}
-            disabled={saving || uploading || !form.videoUrl}
-            className="bg-red text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-dark transition disabled:opacity-50"
+            disabled={saving || !form.videoUrl}
           >
-            {uploading ? 'Uploading...' : saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
-          </button>
+            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

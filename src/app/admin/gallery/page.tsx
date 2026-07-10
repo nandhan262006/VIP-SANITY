@@ -1,117 +1,136 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
+import { Button, Card, Label, TextInput, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
+import FileUpload from '@/components/admin/FileUpload'
+import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
-type Item = { id: number; src: string; galleryTitle: string; gallerySlug: string }
+type Item = { id: number; src: string; galleryTitle: string; gallerySlug: string; srcPublicId?: string }
 
 export default function GalleryPage() {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState({ src: '', galleryTitle: '', gallerySlug: '' })
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ src: '', srcPublicId: '', galleryTitle: '', gallerySlug: '' })
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/gallery').then(r => r.json()).then(d => { setItems(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-    setUploading(true)
-    const fd = new FormData()
-    fd.append('file', f)
-    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    setForm(p => ({ ...p, src: data.url }))
-    setUploading(false)
-  }
+  useEffect(() => {
+    fetch('/api/admin/gallery')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setItems(d))
+      .catch(() => showToast('Failed to load gallery', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
 
   async function handleSave() {
-    const body = { ...form, order: 0 }
-    if (editId) {
-      await fetch(`/api/admin/gallery/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    } else {
-      await fetch('/api/admin/gallery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    setSaving(true)
+    try {
+      const body = { src: form.src, srcPublicId: form.srcPublicId, galleryTitle: form.galleryTitle, gallerySlug: form.gallerySlug, order: 0 }
+      const url = editId ? `/api/admin/gallery/${editId}` : '/api/admin/gallery'
+      const method = editId ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      setShowForm(false); setEditId(null); setForm({ src: '', srcPublicId: '', galleryTitle: '', gallerySlug: '' })
+      const refreshed = await fetch('/api/admin/gallery')
+      setItems(await refreshed.json())
+      showToast(editId ? 'Image updated' : 'Image added')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setForm({ src: '', galleryTitle: '', gallerySlug: '' }); setFile(null)
-    const res = await fetch('/api/admin/gallery')
-    setItems(await res.json())
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm('Delete this image?')) return
-    await fetch(`/api/admin/gallery/${id}`, { method: 'DELETE' })
-    setItems(items.filter(i => i.id !== id))
+  async function handleDelete() {
+    if (!deleteId) return
+    const item = items.find(i => i.id === deleteId)
+    try {
+      await fetch(`/api/admin/gallery/${deleteId}`, { method: 'DELETE' })
+      if (item?.srcPublicId) {
+        await fetch('/api/admin/delete-file', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicId: item.srcPublicId }) })
+      }
+      setItems(items.filter(i => i.id !== deleteId))
+      showToast('Image deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   function startEdit(s: Item) {
-    setEditId(s.id); setForm({ src: s.src, galleryTitle: s.galleryTitle, gallerySlug: s.gallerySlug }); setShowForm(true)
+    setEditId(s.id)
+    setForm({ src: s.src, srcPublicId: s.srcPublicId || '', galleryTitle: s.galleryTitle, gallerySlug: s.gallerySlug })
+    setShowForm(true)
   }
 
   if (loading) return <div className="text-gray-400 text-sm p-8">Loading...</div>
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gallery</h1>
-        <button onClick={() => { setShowForm(true); setEditId(null); setForm({ src: '', galleryTitle: '', gallerySlug: '' }); setFile(null) }} className="bg-red text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-dark transition">Add Image</button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gallery</h1>
+        <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ src: '', srcPublicId: '', galleryTitle: '', gallerySlug: '' }) }}>
+          Add Image
+        </Button>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-            <h2 className="font-bold text-gray-900 mb-4">{editId ? 'Edit Image' : 'New Image'}</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Upload Image</label>
-                <input type="file" accept="image/*" onChange={handleUpload} className="w-full text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Or Image URL</label>
-                <input value={form.src} onChange={e => setForm(p => ({ ...p, src: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              {form.src && (
-                <div className="relative w-full h-28 rounded-lg overflow-hidden bg-gray-100">
-                  <Image src={form.src} alt="" fill className="object-cover" />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Gallery Title</label>
-                <input value={form.galleryTitle} onChange={e => setForm(p => ({ ...p, galleryTitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Gallery Slug</label>
-                <input value={form.gallerySlug} onChange={e => setForm(p => ({ ...p, gallerySlug: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
+      <Modal show={showForm} onClose={() => setShowForm(false)} size="md">
+        <ModalHeader>{editId ? 'Edit Image' : 'New Image'}</ModalHeader>
+        <ModalBody>
+          <div className="space-y-4">
+            <FileUpload currentUrl={form.src} onUpload={(url, publicId) => setForm(p => ({ ...p, src: url, srcPublicId: publicId || '' }))} />
+            <div>
+              <Label>Or Image URL</Label>
+              <TextInput value={form.src} onChange={e => setForm(p => ({ ...p, src: e.target.value, srcPublicId: '' }))} />
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2 rounded-lg border border-gray-300 text-sm text-gray-600">Cancel</button>
-              <button onClick={handleSave} disabled={!form.src || !form.galleryTitle || uploading} className="flex-1 py-2 rounded-lg bg-red text-white text-sm font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Save'}</button>
+            <div>
+              <Label>Gallery Title</Label>
+              <TextInput value={form.galleryTitle} onChange={e => setForm(p => ({ ...p, galleryTitle: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Gallery Slug</Label>
+              <TextInput value={form.gallerySlug} onChange={e => setForm(p => ({ ...p, gallerySlug: e.target.value }))} />
             </div>
           </div>
-        </div>
-      )}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!form.src || !form.galleryTitle || saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      <DeleteConfirm open={deleteId !== null} onConfirm={handleDelete} onCancel={() => setDeleteId(null)} itemName="this image" />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map(item => (
-          <div key={item.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden group">
-            <div className="relative aspect-[4/3] bg-gray-100">
+          <Card key={item.id} className="overflow-hidden">
+            <div className="relative aspect-[4/3] bg-gray-100 -mx-4 -mt-4">
               <Image src={item.src} alt={item.galleryTitle} fill className="object-cover" />
             </div>
-            <div className="p-3">
-              <p className="text-sm font-medium text-gray-900 truncate">{item.galleryTitle}</p>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.galleryTitle}</p>
               <p className="text-xs text-gray-400 truncate">{item.gallerySlug}</p>
               <div className="mt-2 flex gap-2">
-                <button onClick={() => startEdit(item)} className="text-xs text-red font-medium">Edit</button>
-                <button onClick={() => handleDelete(item.id)} className="text-xs text-gray-400 hover:text-red">Delete</button>
+                <button type="button" className="text-red-600 text-xs font-medium" onClick={() => startEdit(item)}>Edit</button>
+                <button type="button" className="text-gray-500 text-xs hover:text-red-600" onClick={() => setDeleteId(item.id)}>Delete</button>
               </div>
             </div>
-          </div>
+          </Card>
         ))}
         {items.length === 0 && (
           <div className="col-span-full text-center text-gray-400 text-sm py-12">No gallery images yet</div>

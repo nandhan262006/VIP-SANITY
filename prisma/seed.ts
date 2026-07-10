@@ -1,12 +1,23 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
-
-const url = process.env.DATABASE_URL || 'file:./dev.db'
-const adapter = new PrismaBetterSqlite3({ url })
-const prisma = new PrismaClient({ adapter })
 
 async function main() {
+  let prisma: PrismaClient
+
+  const tursoUrl = process.env.TURSO_DATABASE_URL
+  const tursoToken = process.env.TURSO_AUTH_TOKEN
+
+  if (tursoUrl) {
+    const { PrismaLibSql } = await import('@prisma/adapter-libsql')
+    const adapter = new PrismaLibSql({ url: tursoUrl, authToken: tursoToken })
+    prisma = new PrismaClient({ adapter })
+  } else {
+    const { PrismaBetterSqlite3 } = await import('@prisma/adapter-better-sqlite3')
+    const url = process.env.DATABASE_URL || 'file:./dev.db'
+    const adapter = new PrismaBetterSqlite3({ url })
+    prisma = new PrismaClient({ adapter })
+  }
+
   if (await prisma.heroSlide.count() === 0) {
     for (const src of ['/BRIDAL.png', '/CANDID.png', '/ENGAGEMENT.png', '/WEDDING.png', '/PREWEDDING.png', '/MATERNITY.png', '/HERO.png']) {
       await prisma.heroSlide.create({ data: { imageUrl: src, order: 0 } })
@@ -90,6 +101,7 @@ async function main() {
   }
 
   console.log('Seed completed successfully')
+  await prisma.$disconnect()
 }
 
 main().catch(console.error)

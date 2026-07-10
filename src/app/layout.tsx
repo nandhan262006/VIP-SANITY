@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { ThemeModeScript } from 'flowbite-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import PopupVideo from '@/components/PopupVideo'
@@ -245,7 +246,10 @@ export default async function RootLayout({
   const sanitized = JSON.stringify(jsonLd).replace(/</g, '\\u003c')
 
   return (
-    <html lang="en-IN">
+    <html lang="en-IN" suppressHydrationWarning>
+      <head>
+        <ThemeModeScript />
+      </head>
       <body className="min-h-screen bg-white text-gray-900 antialiased">
         <script
           type="application/ld+json"
