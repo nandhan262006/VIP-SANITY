@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/studio/'],
+        disallow: ['/api/', '/admin/'],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,

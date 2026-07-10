@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Lightbox from '@/components/Lightbox'
 
-const ALL_IMAGES = [
+const DEFAULT_IMAGES = [
   { src: '/BRIDAL.png', galleryTitle: 'Bridal Photography', gallerySlug: 'bridal' },
   { src: '/CANDID.png', galleryTitle: 'Candid Photography', gallerySlug: 'candid' },
   { src: '/ENGAGEMENT.png', galleryTitle: 'Engagement Photography', gallerySlug: 'engagement' },
@@ -18,6 +18,14 @@ const ALL_IMAGES = [
 
 export default function GalleryPage() {
   const [lightbox, setLightbox] = useState<string | null>(null)
+  const [images, setImages] = useState(DEFAULT_IMAGES)
+
+  useEffect(() => {
+    fetch('/api/gallery')
+      .then((r) => r.json())
+      .then((data) => { if (data?.length) setImages(data) })
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="py-20 px-4 max-w-7xl mx-auto bg-surface min-h-screen">
@@ -25,7 +33,7 @@ export default function GalleryPage() {
       <p className="text-gray-500 mb-8">Browse our complete collection</p>
 
       <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
-        {ALL_IMAGES.map((img, i) => (
+        {images.map((img, i) => (
           <button
             key={`${img.gallerySlug}-${i}`}
             onClick={() => setLightbox(img.src)}

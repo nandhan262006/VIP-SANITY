@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model ContactSubmission {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PortfolioItem {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  title       String
+  description String?
+  category    String?
+  coverImage  String?
+  date        String?
+  images      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HeroSlide {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  imageUrl    String
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model GalleryImage {
+  id           Int      @id @default(autoincrement())
+  src          String
+  galleryTitle String
+  gallerySlug  String
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model Award {
+  id          Int      @id @default(autoincrement())
+  year        String
+  title       String
+  org         String
+  description String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Stat {
+  id     Int    @id @default(autoincrement())
+  number String
+  label  String
+  desc   String
+  order  Int    @default(0)
+}
+
+model SiteSetting {
+  id       Int    @id @default(autoincrement())
+  key      String @unique
+  value    String
+}
+
+model PopupVideo {
+  id      Int      @id @default(autoincrement())
+  videoUrl String
+  enabled Boolean  @default(true)
+  delay   Int      @default(10)
+}

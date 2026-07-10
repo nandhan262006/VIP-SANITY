@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import PopupVideo from '@/components/PopupVideo'
+import { getPopupVideo } from '@/lib/site'
 import './globals.css'
 
 export const viewport: Viewport = {
@@ -11,42 +12,55 @@ export const viewport: Viewport = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: 'VIP Studio — Wedding Photography & Cinematography in Nellore',
-      template: '%s | VIP Studio',
+      default: 'Best Photographer in Nellore | Vijay — VIP Studio Wedding Photography',
+      template: '%s | VIP Studio — Best Photographer in Nellore',
     },
-    description: 'National Award Winning Wedding Photography by Vijay. Based in Nellore, 22+ years of experience in candid wedding photography, cinematography, and event coverage.',
+    description: 'National Award Winning Best Photographer in Nellore — Vijay Kumar of VIP Studio. 25+ years experience in candid wedding photography, cinematography, bridal portraits & event coverage. Wedding Photographer of the Year 2010 (Kodak). Book the top-rated photographer in Nellore, Andhra Pradesh.',
     keywords: [
-      'wedding photography Nellore',
-      'wedding cinematography',
+      'best photographer in Nellore',
+      'best wedding photographer Nellore',
+      'top photographer Nellore',
       'candid photographer Nellore',
-      'VIP Studio',
-      'Vijay photographer',
+      'wedding photography Nellore',
+      'wedding cinematography Nellore',
+      'VIP Studio Nellore',
+      'Vijay photographer Nellore',
+      'National Award winning photographer Andhra Pradesh',
       'wedding photographer Andhra Pradesh',
-      'best wedding photographer',
+      'photography services Nellore',
+      'bridal photography Nellore',
+      'engagement photographer Nellore',
+      'pre-wedding shoot Nellore',
+      'event photographer Nellore',
+      'traditional wedding photography Andhra',
       'wedding films Nellore',
-      'engagement photography',
-      'bridal photography',
+      'cineamatography Nellore',
+      'best wedding photographer',
+      'wedding photographer near me',
+      'photographer in Nellore',
+      'Vijay wedding photographer',
+      'Kodak award photographer India',
     ],
-    applicationName: 'VIP Studio',
+    applicationName: 'VIP Studio - Best Photographer in Nellore',
     category: 'Wedding Photography & Cinematography',
     classification: 'Photography Services',
     openGraph: {
-      title: 'VIP Studio — Wedding Photography & Cinematography',
-      description: 'National Award Winning Wedding Photography by Vijay. Based in Nellore, serving with 22+ years of experience.',
+      title: 'Best Photographer in Nellore — VIP Studio | National Award Winning Wedding Photography',
+      description: 'National Award Winning Best Photographer in Nellore. Vijay Kumar, Wedding Photographer of the Year 2010 (Kodak), 25+ years capturing wedding stories across Andhra Pradesh.',
       url: '/',
-      siteName: 'VIP Studio',
+      siteName: 'VIP Studio - Best Photographer in Nellore',
       locale: 'en_IN',
       type: 'website',
-      images: [{ url: '/logo.png', width: 512, height: 512, alt: 'VIP Studio Logo' }],
+      images: [{ url: '/logo.png', width: 512, height: 512, alt: 'VIP Studio — Best Photographer in Nellore | Wedding Photography' }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'VIP Studio — Wedding Photography & Cinematography',
-      description: 'National Award Winning Wedding Photography in Nellore',
+      title: 'Best Photographer in Nellore — VIP Studio | Award Winning Wedding Photography',
+      description: 'National Award Winning Best Photographer in Nellore. Wedding Photographer of the Year 2010. Book Vijay Kumar for candid wedding photography.',
       images: ['/logo.png'],
     },
     robots: {
@@ -57,6 +71,12 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     alternates: {
       canonical: baseUrl,
+    },
+    other: {
+      'geo.region': 'IN-AP',
+      'geo.placename': 'Nellore',
+      'geo.position': '14.4426;79.9865',
+      'ICBM': '14.4426, 79.9865',
     },
   }
 }
@@ -69,7 +89,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vip-studio.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
+  const popup = await getPopupVideo()
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -78,24 +99,75 @@ export default async function RootLayout({
         '@type': 'WebSite',
         '@id': `${baseUrl}/#website`,
         url: baseUrl,
-        name: 'VIP Studio',
-        description: 'National Award Winning Wedding Photography & Cinematography',
+        name: 'VIP Studio — Best Photographer in Nellore',
+        description: 'National Award Winning Best Photographer in Nellore. Wedding Photography & Cinematography by Vijay Kumar.',
         publisher: { '@id': `${baseUrl}/#organization` },
         inLanguage: 'en-IN',
       },
       {
+        '@type': 'Person',
+        '@id': `${baseUrl}/#person`,
+        name: 'Vijay Kumar',
+        givenName: 'Vijay',
+        familyName: 'Kumar',
+        jobTitle: 'Best Photographer in Nellore | CEO & Wedding Photographer',
+        description: 'National Award Winning best photographer in Nellore with 25+ years of experience. Specialist in candid wedding photography, bridal portraits, and cinematography.',
+        image: `${baseUrl}/logo.png`,
+        url: baseUrl,
+        telephone: '+919299950999',
+        email: 'contact@vipstudio.com',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: '26-1-1639, beside MGB Mall, Obulreddy Nagar, Dargamitta',
+          addressLocality: 'Nellore',
+          addressRegion: 'Andhra Pradesh',
+          postalCode: '524003',
+          addressCountry: 'IN',
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: 14.4426,
+          longitude: 79.9865,
+        },
+        award: [
+          'National Award — Wedding Photography (India)',
+          'Wedding Photographer of the Year 2010 — Kodak',
+          '15 Years of Excellence — VIP Studio',
+        ],
+        knowsAbout: [
+          'Wedding Photography',
+          'Candid Photography',
+          'Bridal Photography',
+          'Wedding Cinematography',
+          'Engagement Photography',
+          'Pre-Wedding Shoots',
+          'Event Photography',
+        ],
+        sameAs: [
+          'https://www.instagram.com/vipevents_nellore/',
+          'https://www.facebook.com/VIPweddingsnellore',
+          'https://www.youtube.com/channel/UCtNRNNFqPvOB_4SK7',
+        ],
+        foundingDate: '2008',
+        affiliation: {
+          '@type': 'Organization',
+          name: 'VIP Studio',
+        },
+      },
+      {
         '@type': 'LocalBusiness',
         '@id': `${baseUrl}/#organization`,
-        name: 'VIP Studio',
-        description: 'National Award Winning Wedding Photography & Cinematography',
+        name: 'VIP Studio — Best Photographer in Nellore',
+        description: 'National Award Winning Best Photographer in Nellore. Specializing in candid wedding photography, cinematography, bridal & engagement shoots. 25+ years of award-winning service.',
         image: `${baseUrl}/logo.png`,
         url: baseUrl,
         telephone: '+91 92999 50999',
         email: 'contact@vipstudio.com',
         founder: {
           '@type': 'Person',
+          '@id': `${baseUrl}/#person`,
           name: 'Vijay Kumar',
-          jobTitle: 'CEO & Wedding Photographer',
+          jobTitle: 'Best Photographer in Nellore | CEO & Wedding Photographer',
         },
         address: {
           '@type': 'PostalAddress',
@@ -124,15 +196,35 @@ export default async function RootLayout({
           'https://www.facebook.com/VIPweddingsnellore',
           'https://www.youtube.com/channel/UCtNRNNFqPvOB_4SK7',
         ],
-        areaServed: 'Nellore, Andhra Pradesh, India',
+        areaServed: ['Nellore', 'Andhra Pradesh', 'India'],
         priceRange: '₹₹',
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.9',
+          bestRating: '5',
+          ratingCount: '180',
+          reviewCount: '180',
+        },
+        hasOfferCatalog: {
+          '@type': 'OfferCatalog',
+          name: 'Photography Services',
+          itemListElement: [
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Wedding Photography' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Wedding Cinematography' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Bridal Photography' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Candid Photography' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Engagement Photography' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Pre-Wedding Shoot' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Event Photography' } },
+          ],
+        },
       },
       {
         '@type': 'Service',
         '@id': `${baseUrl}/#service`,
-        name: 'Wedding Photography Services',
+        name: 'Wedding Photography Services by Best Photographer in Nellore',
         provider: { '@id': `${baseUrl}/#organization` },
-        areaServed: 'Nellore, Andhra Pradesh, India',
+        areaServed: ['Nellore', 'Andhra Pradesh', 'India'],
         serviceType: [
           'Wedding Photography',
           'Wedding Cinematography',
@@ -142,22 +234,32 @@ export default async function RootLayout({
           'Pre-Wedding Shoot',
           'Event Photography',
         ],
+        awards: [
+          'National Award — Wedding Photography',
+          'Wedding Photographer of the Year 2010 — Kodak',
+        ],
       },
     ],
   }
+
+  const sanitized = JSON.stringify(jsonLd).replace(/</g, '\\u003c')
 
   return (
     <html lang="en-IN">
       <body className="min-h-screen bg-white text-gray-900 antialiased">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: sanitized }}
         />
         <Header />
         <main>{children}</main>
         <Footer />
 
-        <PopupVideo />
+        <PopupVideo
+          videoUrl={popup?.videoUrl || undefined}
+          enabled={popup?.enabled}
+          delay={popup?.delay}
+        />
 
         <a
           href={`tel:${PHONE_NUMBER}`}

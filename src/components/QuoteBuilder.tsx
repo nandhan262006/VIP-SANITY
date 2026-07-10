@@ -5,6 +5,49 @@ import Image from 'next/image'
 import jsPDF from 'jspdf'
 import { STEPS, type Step, type StepItem } from '@/data/quoteSteps'
 
+interface SanityStepItem {
+  id: string
+  name: string
+  image: string
+  price: number
+}
+
+interface SanityStep {
+  id: string
+  title: string
+  subtitle?: string
+  type: string
+  conditionType?: string
+  conditionOn?: string
+  items: SanityStepItem[]
+}
+
+function convertSanitySteps(sanitySteps: SanityStep[]): Step[] {
+  return sanitySteps.map((s) => {
+    let condition: ((selections: Record<string, number>) => boolean) | undefined
+    if (s.conditionType === 'equals-yes' && s.conditionOn) {
+      const on = s.conditionOn
+      condition = (sel) => sel[`${on}-y`] === 1
+    } else if (s.conditionType === 'equals-no' && s.conditionOn) {
+      const on = s.conditionOn
+      condition = (sel) => sel[`${on}-n`] === 1
+    }
+    return {
+      id: s.id,
+      title: s.title,
+      subtitle: s.subtitle,
+      type: s.type as Step['type'],
+      items: s.items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        image: i.image,
+        price: i.price,
+      })),
+      ...(condition ? { condition } : {}),
+    }
+  })
+}
+
 function cn(...classes: (string | boolean | undefined | null)[]) {
   return classes.filter(Boolean).join(' ')
 }
@@ -134,14 +177,21 @@ function buildPdf(
   return doc
 }
 
-export default function QuoteBuilder() {
+export default function QuoteBuilder({ sanitySteps }: { sanitySteps?: SanityStep[] }) {
   const [stepIdx, setStepIdx] = useState(0)
   const [qtys, setQtys] = useState<Record<string, number>>({})
   const [sels, setSels] = useState<Record<string, number>>({})
   const [form, setForm] = useState({ name: '', date: '', venue: '', phone: '', email: '', accepted: false })
   const [done, setDone] = useState(false)
 
-  const visibleSteps = useMemo(() => STEPS.filter((s) => !s.condition || s.condition(sels)), [sels])
+  const steps = useMemo(() => {
+    if (sanitySteps && sanitySteps.length > 0) {
+      return convertSanitySteps(sanitySteps)
+    }
+    return STEPS
+  }, [sanitySteps])
+
+  const visibleSteps = useMemo(() => steps.filter((s) => !s.condition || s.condition(sels)), [steps, sels])
   const step = visibleSteps[stepIdx]
   const total = useMemo(() => calcTotal(visibleSteps, qtys, sels), [visibleSteps, qtys, sels])
   const summary = useMemo(() => getSummary(visibleSteps, qtys, sels), [visibleSteps, qtys, sels])

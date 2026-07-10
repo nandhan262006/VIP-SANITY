@@ -20,9 +20,11 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-sm text-gray-600 hover:text-red transition">Home</Link>
           <Link href="/#services" className="text-sm text-gray-600 hover:text-red transition">Services</Link>
+          <Link href="/about" className="text-sm text-gray-600 hover:text-red transition">About</Link>
           <Link href="/portfolio" className="text-sm text-gray-600 hover:text-red transition">Portfolio</Link>
           <Link href="/build-your-quote" className="text-sm text-gray-600 hover:text-red transition">Build Your Quote</Link>
           <Link href="/contact" className="text-sm text-gray-600 hover:text-red transition">Contact</Link>
+          <Link href="/admin" className="text-sm text-gray-600 hover:text-red transition">Admin</Link>
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"
@@ -58,9 +60,11 @@ export default function Header() {
         <div className="md:hidden border-t border-gray-200 bg-white/95 px-4 py-4 space-y-3">
           <Link href="/" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link href="/#services" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>Services</Link>
+          <Link href="/about" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>About</Link>
           <Link href="/portfolio" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>Portfolio</Link>
           <Link href="/build-your-quote" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>Build Your Quote</Link>
           <Link href="/contact" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>Contact</Link>
+          <Link href="/admin" className="block text-sm text-gray-600 hover:text-red" onClick={() => setMenuOpen(false)}>Admin</Link>
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"

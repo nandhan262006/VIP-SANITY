@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-export default function PopupVideo() {
+export default function PopupVideo({ videoUrl, enabled, delay }: { videoUrl?: string; enabled?: boolean; delay?: number }) {
   const [show, setShow] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [playing, setPlaying] = useState(false)
@@ -10,14 +10,16 @@ export default function PopupVideo() {
   const playedRef = useRef(false)
 
   useEffect(() => {
+    if (enabled === false) return
+    const ms = (delay || 10) * 1000
     const timer = setTimeout(() => {
       if (!playedRef.current) {
         playedRef.current = true
         setShow(true)
       }
-    }, 10000)
+    }, ms)
     return () => clearTimeout(timer)
-  }, [])
+  }, [enabled, delay])
 
   useEffect(() => {
     if (show) {
@@ -71,7 +73,7 @@ export default function PopupVideo() {
         <div className="rounded-2xl overflow-hidden shadow-2xl bg-black relative">
           <video
             ref={videoRef}
-            src="/POPUP.mp4"
+            src={videoUrl || '/POPUP.mp4'}
             playsInline
             preload="auto"
             onEnded={handleClose}

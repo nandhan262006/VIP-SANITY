@@ -1,28 +1,9 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import PortfolioGrid from '@/components/PortfolioGrid'
+import { prisma } from '@/lib/prisma'
 
-export const metadata: Metadata = {
-  title: 'Portfolio',
-  description: 'Explore our wedding photography and cinematography portfolio. Browse through bridal, engagement, candid, and event galleries by VIP Studio in Nellore.',
-  openGraph: {
-    title: 'Portfolio | VIP Studio Wedding Photography',
-    description: 'Browse our wedding photography and cinematography portfolio in Nellore. Bridal, candid, engagement, and event photography by National Award Winner Vijay.',
-    url: '/portfolio',
-    siteName: 'VIP Studio',
-    locale: 'en_IN',
-    type: 'website',
-    images: [{ url: '/BRIDAL.png', width: 800, height: 600, alt: 'VIP Studio Wedding Photography Portfolio' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Portfolio | VIP Studio Wedding Photography',
-    description: 'Browse our wedding photography and cinematography portfolio in Nellore.',
-    images: ['/BRIDAL.png'],
-  },
-}
-
-const GALLERIES = [
+const defaultGalleries = [
   { _id: '1', slug: 'bridal', title: 'Bridal Photography', categoryTitle: 'Bridal', image: '/BRIDAL.png', date: '2025-12-01' },
   { _id: '2', slug: 'candid', title: 'Candid Photography', categoryTitle: 'Candid', image: '/CANDID.png', date: '2025-11-15' },
   { _id: '3', slug: 'engagement', title: 'Engagement Photography', categoryTitle: 'Engagement', image: '/ENGAGEMENT.png', date: '2025-10-20' },
@@ -31,7 +12,7 @@ const GALLERIES = [
   { _id: '6', slug: 'events', title: 'Event Photography', categoryTitle: 'Events', image: '/CORPERATE.png', date: '2025-07-18' },
 ]
 
-const CATEGORIES = [
+const defaultCategories = [
   { _id: 'c1', title: 'Bridal', slug: 'bridal' },
   { _id: 'c2', title: 'Candid', slug: 'candid' },
   { _id: 'c3', title: 'Engagement', slug: 'engagement' },
@@ -39,6 +20,28 @@ const CATEGORIES = [
   { _id: 'c5', title: 'Pre-Wedding', slug: 'prewedding' },
   { _id: 'c6', title: 'Events', slug: 'events' },
 ]
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Portfolio',
+    description: 'Explore our wedding photography and cinematography portfolio. Browse through bridal, engagement, candid, and event galleries by VIP Studio in Nellore.',
+    openGraph: {
+      title: 'Portfolio | VIP Studio Wedding Photography',
+      description: 'Browse our wedding photography and cinematography portfolio in Nellore. Bridal, candid, engagement, and event photography by National Award Winner Vijay.',
+      url: '/portfolio',
+      siteName: 'VIP Studio',
+      locale: 'en_IN',
+      type: 'website',
+      images: [{ url: '/BRIDAL.png', width: 800, height: 600, alt: 'VIP Studio Wedding Photography Portfolio' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Portfolio | VIP Studio Wedding Photography',
+      description: 'Browse our wedding photography and cinematography portfolio in Nellore.',
+      images: ['/BRIDAL.png'],
+    },
+  }
+}
 
 export default async function PortfolioPage({
   searchParams,
@@ -48,9 +51,29 @@ export default async function PortfolioPage({
   const { category: categoryParam } = await searchParams
   const activeCategory = categoryParam || ''
 
+  const portfolioItems = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
+  const items = portfolioItems.length > 0
+    ? portfolioItems.map(p => ({
+        _id: String(p.id),
+        slug: p.slug,
+        title: p.title,
+        categoryTitle: p.category || '',
+        image: p.coverImage || '',
+        date: p.date || '',
+      }))
+    : defaultGalleries
+
+  const cats = portfolioItems.length > 0
+    ? [...new Set(portfolioItems.map(p => p.category).filter(Boolean) as string[])].map((t, i) => ({
+        _id: `c${i}`,
+        title: t,
+        slug: t.toLowerCase().replace(/\s+/g, ''),
+      }))
+    : defaultCategories
+
   const filtered = activeCategory
-    ? GALLERIES.filter((g) => g.slug === activeCategory)
-    : GALLERIES
+    ? items.filter((g: any) => g.slug === activeCategory || g.categoryTitle?.toLowerCase().replace(/\s+/g, '') === activeCategory)
+    : items
 
   return (
     <div className="py-20 px-4 max-w-7xl mx-auto">
@@ -68,7 +91,7 @@ export default async function PortfolioPage({
         >
           All
         </Link>
-        {CATEGORIES.map((cat) => (
+        {cats.map((cat: any) => (
           <Link
             key={cat._id}
             href={`/portfolio?category=${cat.slug}`}

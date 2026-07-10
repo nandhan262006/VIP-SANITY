@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 
-const SLIDER_IMAGES = [
+const DEFAULT_SLIDES = [
   '/BRIDAL.png',
   '/CANDID.png',
   '/ENGAGEMENT.png',
@@ -13,19 +13,20 @@ const SLIDER_IMAGES = [
   '/HERO.png',
 ]
 
-export default function HeroSlider() {
+export default function HeroSlider({ slides }: { slides?: { imageUrl: string }[] }) {
   const [current, setCurrent] = useState(0)
+  const images = slides && slides.length > 0 ? slides.map((s) => s.imageUrl) : DEFAULT_SLIDES
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % SLIDER_IMAGES.length)
+      setCurrent((prev) => (prev + 1) % images.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [])
+  }, [images.length])
 
   return (
     <div className="absolute inset-0">
-      {SLIDER_IMAGES.map((src, i) => (
+      {images.map((src, i) => (
         <div
           key={src}
           className={`absolute inset-0 transition-opacity duration-1000 ${i === current ? 'opacity-100' : 'opacity-0'}`}

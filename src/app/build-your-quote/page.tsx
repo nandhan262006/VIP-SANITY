@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import QuoteBuilder from '@/components/QuoteBuilder'
 
-export const metadata: Metadata = {
-  title: 'Build Your Quote',
-  description: 'Build your own wedding photography & cinematography quote. Select events, albums, and more to get an instant price estimate.',
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Build Your Quote',
+    description: 'Build your own wedding photography & cinematography quote. Select events, albums, and more to get an instant price estimate.',
+  }
 }
 
 export default function BuildYourQuotePage() {
