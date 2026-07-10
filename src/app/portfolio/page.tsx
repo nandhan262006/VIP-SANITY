@@ -51,7 +51,10 @@ export default async function PortfolioPage({
   const { category: categoryParam } = await searchParams
   const activeCategory = categoryParam || ''
 
-  const portfolioItems = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
+  let portfolioItems: any[]
+  try {
+    portfolioItems = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
+  } catch { portfolioItems = [] }
   const items = portfolioItems.length > 0
     ? portfolioItems.map(p => ({
         _id: String(p.id),

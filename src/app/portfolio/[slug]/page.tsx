@@ -14,10 +14,12 @@ const fallbackGalleries: Record<string, { title: string; categoryTitle: string; 
 }
 
 export async function generateStaticParams() {
-  const items = await prisma.portfolioItem.findMany({ select: { slug: true } })
-  if (items.length > 0) {
-    return items.map(p => ({ slug: p.slug }))
-  }
+  try {
+    const items = await prisma.portfolioItem.findMany({ select: { slug: true } })
+    if (items.length > 0) {
+      return items.map(p => ({ slug: p.slug }))
+    }
+  } catch {}
   return Object.keys(fallbackGalleries).map((slug) => ({ slug }))
 }
 
@@ -25,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
 
-  const item = await prisma.portfolioItem.findUnique({ where: { slug } })
+  let item: any
+  try { item = await prisma.portfolioItem.findUnique({ where: { slug } }) } catch { item = null }
   if (item) {
     return {
       title: `${item.title} | VIP Studio`,
@@ -75,7 +78,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
 
-  const item = await prisma.portfolioItem.findUnique({ where: { slug } })
+  let item: any
+  try { item = await prisma.portfolioItem.findUnique({ where: { slug } }) } catch { item = null }
 
   let title: string, categoryTitle: string, description: string, date: string, images: string[]
 
