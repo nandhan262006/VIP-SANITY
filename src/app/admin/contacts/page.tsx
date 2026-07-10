@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Badge } from 'flowbite-react'
 import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
 type Contact = { id: number; name: string; email: string; phone: string | null; message: string; read: boolean; createdAt: string }
 
@@ -10,27 +11,50 @@ export default function AdminContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/contacts').then(r => r.json()).then(d => { setContacts(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
+  useEffect(() => {
+    fetch('/api/admin/contacts')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setContacts(d))
+      .catch(() => showToast('Failed to load contacts', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
+
   async function toggleRead(c: Contact) {
-    await fetch('/api/admin/contacts', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, read: !c.read }) })
-    setContacts(contacts.map(x => x.id === c.id ? { ...x, read: !x.read } : x))
+    try {
+      await fetch('/api/admin/contacts', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, read: !c.read }) })
+      setContacts(contacts.map(x => x.id === c.id ? { ...x, read: !x.read } : x))
+      showToast(c.read ? 'Marked as unread' : 'Marked as read')
+    } catch {
+      showToast('Failed to update', 'error')
+    }
   }
 
   async function handleDelete() {
     if (!deleteId) return
-    await fetch('/api/admin/contacts', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: deleteId }) })
-    setContacts(contacts.filter(x => x.id !== deleteId))
-    setDeleteId(null)
+    try {
+      await fetch('/api/admin/contacts', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: deleteId }) })
+      setContacts(contacts.filter(x => x.id !== deleteId))
+      showToast('Contact deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   if (loading) return <div className="text-gray-400 text-sm p-8">Loading...</div>
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Contact Submissions</h1>
 
       <DeleteConfirm open={deleteId !== null} onConfirm={handleDelete} onCancel={() => setDeleteId(null)} itemName="this contact submission" />

@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell, TextInput } from 'flowbite-react'
+import Toast from '@/components/admin/Toast'
 
 type Setting = { key: string; value: string }
 
@@ -22,34 +23,49 @@ export default function SettingsPage() {
   const [editKey, setEditKey] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }, [])
 
   useEffect(() => {
     fetch('/api/admin/settings')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(d => {
         const arr = Object.entries(d).map(([key, value]) => ({ key, value: value as string }))
         setSettings(arr)
-        setLoading(false)
       })
-      .catch(() => setLoading(false))
-  }, [])
+      .catch(() => showToast('Failed to load settings', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
 
   async function handleSave(key: string) {
     setSaving(true)
-    await fetch('/api/admin/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, value: editValue }),
-    })
-    setSettings(prev => prev.map(s => s.key === key ? { ...s, value: editValue } : s))
-    setEditKey(null)
-    setSaving(false)
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value: editValue }),
+      })
+      if (!res.ok) throw new Error()
+      setSettings(prev => prev.map(s => s.key === key ? { ...s, value: editValue } : s))
+      setEditKey(null)
+      showToast('Setting saved')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) return <div className="text-gray-400 text-sm p-8">Loading...</div>
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Site Settings</h1>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -74,7 +90,9 @@ export default function SettingsPage() {
                         className="flex-1"
                         sizing="sm"
                       />
-                      <Button size="xs" color="red" onClick={() => handleSave(s.key)} disabled={saving}>Save</Button>
+                      <Button size="xs" color="red" onClick={() => handleSave(s.key)} disabled={saving}>
+                        {saving ? 'Saving...' : 'Save'}
+                      </Button>
                       <Button size="xs" color="gray" onClick={() => setEditKey(null)}>Cancel</Button>
                     </div>
                   ) : (

@@ -1,40 +1,65 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Card, Label, TextInput, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
 import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
 type Stat = { id: number; number: string; label: string; desc: string }
 
 export default function StatsPage() {
   const [items, setItems] = useState<Stat[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ number: '', label: '', desc: '' })
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/stats').then(r => r.json()).then(d => { setItems(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
+  useEffect(() => {
+    fetch('/api/admin/stats')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setItems(d))
+      .catch(() => showToast('Failed to load stats', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
+
   async function handleSave() {
-    const body = { ...form, order: 0 }
-    if (editId) {
-      await fetch(`/api/admin/stats/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    } else {
-      await fetch('/api/admin/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    setSaving(true)
+    try {
+      const body = { ...form, order: 0 }
+      const url = editId ? `/api/admin/stats/${editId}` : '/api/admin/stats'
+      const method = editId ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      setShowForm(false); setEditId(null); setForm({ number: '', label: '', desc: '' })
+      const refreshed = await fetch('/api/admin/stats')
+      setItems(await refreshed.json())
+      showToast(editId ? 'Stat updated' : 'Stat created')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setForm({ number: '', label: '', desc: '' })
-    const res = await fetch('/api/admin/stats')
-    setItems(await res.json())
   }
 
   async function handleDelete() {
     if (!deleteId) return
-    await fetch(`/api/admin/stats/${deleteId}`, { method: 'DELETE' })
-    setItems(items.filter(i => i.id !== deleteId))
-    setDeleteId(null)
+    try {
+      await fetch(`/api/admin/stats/${deleteId}`, { method: 'DELETE' })
+      setItems(items.filter(i => i.id !== deleteId))
+      showToast('Stat deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   function startEdit(s: Stat) {
@@ -45,6 +70,8 @@ export default function StatsPage() {
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Stats</h1>
         <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ number: '', label: '', desc: '' }) }}>
@@ -71,8 +98,10 @@ export default function StatsPage() {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="gray" onClick={() => setShowForm(false)}>Cancel</Button>
-          <Button color="red" onClick={handleSave} disabled={!form.number || !form.label}>Save</Button>
+          <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!form.number || !form.label || saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
         </ModalFooter>
       </Modal>
 

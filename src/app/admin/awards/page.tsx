@@ -1,40 +1,65 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Label, TextInput, Textarea, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
 import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
 type Award = { id: number; year: string; title: string; org: string; description: string }
 
 export default function AwardsPage() {
   const [items, setItems] = useState<Award[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ year: '', title: '', org: '', description: '' })
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/awards').then(r => r.json()).then(d => { setItems(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
+  useEffect(() => {
+    fetch('/api/admin/awards')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setItems(d))
+      .catch(() => showToast('Failed to load awards', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
+
   async function handleSave() {
-    const body = { ...form, order: 0 }
-    if (editId) {
-      await fetch(`/api/admin/awards/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    } else {
-      await fetch('/api/admin/awards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    setSaving(true)
+    try {
+      const body = { ...form, order: 0 }
+      const url = editId ? `/api/admin/awards/${editId}` : '/api/admin/awards'
+      const method = editId ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      setShowForm(false); setEditId(null); setForm({ year: '', title: '', org: '', description: '' })
+      const refreshed = await fetch('/api/admin/awards')
+      setItems(await refreshed.json())
+      showToast(editId ? 'Award updated' : 'Award created')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setForm({ year: '', title: '', org: '', description: '' })
-    const res = await fetch('/api/admin/awards')
-    setItems(await res.json())
   }
 
   async function handleDelete() {
     if (!deleteId) return
-    await fetch(`/api/admin/awards/${deleteId}`, { method: 'DELETE' })
-    setItems(items.filter(i => i.id !== deleteId))
-    setDeleteId(null)
+    try {
+      await fetch(`/api/admin/awards/${deleteId}`, { method: 'DELETE' })
+      setItems(items.filter(i => i.id !== deleteId))
+      showToast('Award deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   function startEdit(s: Award) {
@@ -45,6 +70,8 @@ export default function AwardsPage() {
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Awards</h1>
         <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ year: '', title: '', org: '', description: '' }) }}>
@@ -75,8 +102,10 @@ export default function AwardsPage() {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="gray" onClick={() => setShowForm(false)}>Cancel</Button>
-          <Button color="red" onClick={handleSave} disabled={!form.title}>Save</Button>
+          <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!form.title || saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
         </ModalFooter>
       </Modal>
 

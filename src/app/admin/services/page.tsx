@@ -1,41 +1,66 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Label, TextInput, Textarea, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
 import FileUpload from '@/components/admin/FileUpload'
 import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
 type Service = { id: number; title: string; description: string; imageUrl: string; order: number; active: boolean }
 
 export default function ServicesPage() {
   const [items, setItems] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', imageUrl: '' })
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/services').then(r => r.json()).then(d => { setItems(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
+  useEffect(() => {
+    fetch('/api/admin/services')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setItems(d))
+      .catch(() => showToast('Failed to load services', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
+
   async function handleSave() {
-    const body = { ...form, order: 0, active: true }
-    if (editId) {
-      await fetch(`/api/admin/services/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    } else {
-      await fetch('/api/admin/services', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    setSaving(true)
+    try {
+      const body = { ...form, order: 0, active: true }
+      const url = editId ? `/api/admin/services/${editId}` : '/api/admin/services'
+      const method = editId ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      setShowForm(false); setEditId(null); setForm({ title: '', description: '', imageUrl: '' })
+      const refreshed = await fetch('/api/admin/services')
+      setItems(await refreshed.json())
+      showToast(editId ? 'Service updated' : 'Service created')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setForm({ title: '', description: '', imageUrl: '' })
-    const res = await fetch('/api/admin/services')
-    setItems(await res.json())
   }
 
   async function handleDelete() {
     if (!deleteId) return
-    await fetch(`/api/admin/services/${deleteId}`, { method: 'DELETE' })
-    setItems(items.filter(i => i.id !== deleteId))
-    setDeleteId(null)
+    try {
+      await fetch(`/api/admin/services/${deleteId}`, { method: 'DELETE' })
+      setItems(items.filter(i => i.id !== deleteId))
+      showToast('Service deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   function startEdit(s: Service) {
@@ -46,6 +71,8 @@ export default function ServicesPage() {
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Services</h1>
         <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ title: '', description: '', imageUrl: '' }) }}>
@@ -73,8 +100,10 @@ export default function ServicesPage() {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="gray" onClick={() => setShowForm(false)}>Cancel</Button>
-          <Button color="red" onClick={handleSave} disabled={!form.title || !form.imageUrl}>Save</Button>
+          <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!form.title || !form.imageUrl || saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
         </ModalFooter>
       </Modal>
 

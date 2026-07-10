@@ -64,7 +64,7 @@ export default async function AdminDashboardPage() {
               <div key={c.id} className="py-3 flex items-start justify-between">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white text-sm">
-                    {c.name}{!c.read && <span className="ml-2 inline-block w-2 h-2 bg-red rounded-full" />}
+                    {c.name}{!c.read && <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full" />}
                   </p>
                   <p className="text-xs text-gray-500">{c.email} &middot; {c.phone || 'No phone'}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{c.message}</p>

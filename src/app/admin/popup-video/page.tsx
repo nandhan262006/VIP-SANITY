@@ -1,41 +1,54 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Card, Label, TextInput, ToggleSwitch } from 'flowbite-react'
 import FileUpload from '@/components/admin/FileUpload'
+import Toast from '@/components/admin/Toast'
 
 export default function PopupVideoPage() {
   const [form, setForm] = useState({ videoUrl: '', enabled: true, delay: 10 })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }, [])
 
   useEffect(() => {
     fetch('/api/admin/popup-video')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(d => {
         if (d) setForm({ videoUrl: d.videoUrl || '', enabled: d.enabled ?? true, delay: d.delay ?? 10 })
-        setLoading(false)
       })
-      .catch(() => setLoading(false))
-  }, [])
+      .catch(() => showToast('Failed to load popup video', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
 
   async function handleSave() {
     setSaving(true)
-    await fetch('/api/admin/popup-video', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    try {
+      const res = await fetch('/api/admin/popup-video', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      showToast('Popup video saved')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) return <div className="text-gray-400 text-sm p-8">Loading...</div>
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Popup Video</h1>
 
       <Card className="max-w-lg">
@@ -76,7 +89,7 @@ export default function PopupVideoPage() {
             onClick={handleSave}
             disabled={saving || !form.videoUrl}
           >
-            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+            {saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </Card>

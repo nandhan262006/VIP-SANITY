@@ -1,41 +1,66 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Badge, Label, TextInput, Modal, ModalHeader, ModalBody, ModalFooter } from 'flowbite-react'
 import FileUpload from '@/components/admin/FileUpload'
 import DeleteConfirm from '@/components/admin/DeleteConfirm'
+import Toast from '@/components/admin/Toast'
 
 type Slide = { id: number; imageUrl: string; active: boolean; order: number }
 
 export default function HeroSlidesPage() {
   const [slides, setSlides] = useState<Slide[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [imageUrl, setImageUrl] = useState('')
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/admin/hero-slides').then(r => r.json()).then(d => { setSlides(d); setLoading(false) })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }, [])
 
+  useEffect(() => {
+    fetch('/api/admin/hero-slides')
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(d => setSlides(d))
+      .catch(() => showToast('Failed to load slides', 'error'))
+      .finally(() => setLoading(false))
+  }, [showToast])
+
   async function handleSave() {
-    const body = { imageUrl, active: true, order: 0 }
-    if (editId) {
-      await fetch(`/api/admin/hero-slides/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    } else {
-      await fetch('/api/admin/hero-slides', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    setSaving(true)
+    try {
+      const body = { imageUrl, active: true, order: 0 }
+      const url = editId ? `/api/admin/hero-slides/${editId}` : '/api/admin/hero-slides'
+      const method = editId ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      setShowForm(false); setEditId(null); setImageUrl('')
+      const refreshed = await fetch('/api/admin/hero-slides')
+      setSlides(await refreshed.json())
+      showToast(editId ? 'Slide updated' : 'Slide created')
+    } catch {
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setImageUrl('')
-    const res = await fetch('/api/admin/hero-slides')
-    setSlides(await res.json())
   }
 
   async function handleDelete() {
     if (!deleteId) return
-    await fetch(`/api/admin/hero-slides/${deleteId}`, { method: 'DELETE' })
-    setSlides(slides.filter(s => s.id !== deleteId))
-    setDeleteId(null)
+    try {
+      await fetch(`/api/admin/hero-slides/${deleteId}`, { method: 'DELETE' })
+      setSlides(slides.filter(s => s.id !== deleteId))
+      showToast('Slide deleted')
+    } catch {
+      showToast('Failed to delete', 'error')
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   function startEdit(s: Slide) {
@@ -46,6 +71,8 @@ export default function HeroSlidesPage() {
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hero Slides</h1>
         <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setImageUrl('') }}>
@@ -65,8 +92,10 @@ export default function HeroSlidesPage() {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="gray" onClick={() => setShowForm(false)}>Cancel</Button>
-          <Button color="red" onClick={handleSave} disabled={!imageUrl}>Save</Button>
+          <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
+          <Button color="red" onClick={handleSave} disabled={!imageUrl || saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
         </ModalFooter>
       </Modal>
 
