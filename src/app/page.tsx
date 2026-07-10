@@ -4,7 +4,7 @@ import ServicesStack from '@/components/ServicesStack'
 import HeroSlider from '@/components/HeroSlider'
 import { getHeroSlides, getServices, getSiteSetting } from '@/lib/site'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 const WHATSAPP_NUMBER = '919299950999'
 const PHONE_NUMBER = '+919299950999'

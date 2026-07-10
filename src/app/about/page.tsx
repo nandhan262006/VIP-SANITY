@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getAwards, getStats } from '@/lib/site'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
 
