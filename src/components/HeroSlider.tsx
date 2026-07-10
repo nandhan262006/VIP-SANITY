@@ -28,7 +28,7 @@ export default function HeroSlider({ slides }: { slides?: { imageUrl: string }[]
     <div className="absolute inset-0">
       {images.map((src, i) => (
         <div
-          key={src}
+          key={`${src}-${i}`}
           className={`absolute inset-0 transition-opacity duration-1000 ${i === current ? 'opacity-100' : 'opacity-0'}`}
         >
           <Image

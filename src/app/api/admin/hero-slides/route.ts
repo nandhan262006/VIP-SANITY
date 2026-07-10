@@ -6,8 +6,12 @@ export async function GET() {
   if (!(await getSession())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const slides = await prisma.heroSlide.findMany({ orderBy: { order: 'asc' } })
-  return NextResponse.json(slides)
+  try {
+    const slides = await prisma.heroSlide.findMany({ orderBy: { order: 'asc' } })
+    return NextResponse.json(slides)
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch slides' }, { status: 500 })
+  }
 }
 
 export async function POST(req: Request) {

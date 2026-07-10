@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button, Card, Label, TextInput } from 'flowbite-react'
-import { ThemeModeScript } from 'flowbite-react'
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
@@ -37,7 +36,6 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <ThemeModeScript />
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4">
         <Card className="w-full max-w-sm">
           <div className="text-center mb-6">

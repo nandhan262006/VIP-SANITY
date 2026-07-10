@@ -15,16 +15,6 @@ const fallbackGalleries: Record<string, { title: string; categoryTitle: string; 
   events: { title: 'Event Photography', categoryTitle: 'Events', description: 'Professional coverage for engagements, receptions, and all your special celebrations.', date: '2025-07-18', images: ['/CORPERATE.png', '/CORPERATE.png', '/HERO.png'] },
 }
 
-export async function generateStaticParams() {
-  try {
-    const items = await prisma.portfolioItem.findMany({ select: { slug: true } })
-    if (items.length > 0) {
-      return items.map(p => ({ slug: p.slug }))
-    }
-  } catch {}
-  return Object.keys(fallbackGalleries).map((slug) => ({ slug }))
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
@@ -90,7 +80,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ slug: 
     categoryTitle = item.category || ''
     description = item.description || ''
     date = item.date || ''
-    const parsed = item.images ? JSON.parse(item.images) : []
+    let parsed: string[] = []
+    try { parsed = item.images ? JSON.parse(item.images) : [] } catch { parsed = [] }
     images = parsed.length > 0 ? parsed : item.coverImage ? [item.coverImage] : []
   } else {
     const fallback = fallbackGalleries[slug]

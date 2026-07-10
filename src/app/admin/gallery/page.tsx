@@ -82,7 +82,7 @@ export default function GalleryPage() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gallery</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Portfolio</h1>
         <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ src: '', srcPublicId: '', galleryTitle: '', gallerySlug: '' }) }}>
           Add Image
         </Button>

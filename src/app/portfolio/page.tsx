@@ -53,23 +53,23 @@ export default async function PortfolioPage({
   const { category: categoryParam } = await searchParams
   const activeCategory = categoryParam || ''
 
-  let portfolioItems: any[]
+  let galleryImages: any[]
   try {
-    portfolioItems = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
-  } catch { portfolioItems = [] }
-  const items = portfolioItems.length > 0
-    ? portfolioItems.map(p => ({
-        _id: String(p.id),
-        slug: p.slug,
-        title: p.title,
-        categoryTitle: p.category || '',
-        image: p.coverImage || '',
-        date: p.date || '',
+    galleryImages = await prisma.galleryImage.findMany({ orderBy: { createdAt: 'desc' } })
+  } catch { galleryImages = [] }
+  const items = galleryImages.length > 0
+    ? galleryImages.map(g => ({
+        _id: String(g.id),
+        slug: g.gallerySlug,
+        title: g.galleryTitle,
+        categoryTitle: g.galleryTitle,
+        image: g.src,
+        date: '',
       }))
     : defaultGalleries
 
-  const cats = portfolioItems.length > 0
-    ? [...new Set(portfolioItems.map(p => p.category).filter(Boolean) as string[])].map((t, i) => ({
+  const cats = galleryImages.length > 0
+    ? [...new Set(galleryImages.map(g => g.galleryTitle).filter(Boolean) as string[])].map((t, i) => ({
         _id: `c${i}`,
         title: t,
         slug: t.toLowerCase().replace(/\s+/g, ''),

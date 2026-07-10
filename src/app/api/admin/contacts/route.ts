@@ -4,8 +4,12 @@ import { getSession } from '@/lib/auth'
 
 export async function GET() {
   if (!(await getSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const contacts = await prisma.contactSubmission.findMany({ orderBy: { createdAt: 'desc' } })
-  return NextResponse.json(contacts)
+  try {
+    const contacts = await prisma.contactSubmission.findMany({ orderBy: { createdAt: 'desc' } })
+    return NextResponse.json(contacts)
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 })
+  }
 }
 
 export async function PUT(req: Request) {

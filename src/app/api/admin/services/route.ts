@@ -6,8 +6,12 @@ export async function GET() {
   if (!(await getSession())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const services = await prisma.service.findMany({ orderBy: { order: 'asc' } })
-  return NextResponse.json(services)
+  try {
+    const services = await prisma.service.findMany({ orderBy: { order: 'asc' } })
+    return NextResponse.json(services)
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })
+  }
 }
 
 export async function POST(req: Request) {

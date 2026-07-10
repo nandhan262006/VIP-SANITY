@@ -6,8 +6,12 @@ export async function GET() {
   if (!(await getSession())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const video = await prisma.popupVideo.findFirst({ orderBy: { id: 'asc' } })
-  return NextResponse.json(video)
+  try {
+    const video = await prisma.popupVideo.findFirst({ orderBy: { id: 'asc' } })
+    return NextResponse.json(video)
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch popup video' }, { status: 500 })
+  }
 }
 
 export async function PUT(req: Request) {

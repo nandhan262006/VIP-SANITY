@@ -6,9 +6,13 @@ export async function GET() {
   if (!(await getSession())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const settings = await prisma.siteSetting.findMany()
-  const map = Object.fromEntries(settings.map(s => [s.key, s.value]))
-  return NextResponse.json(map)
+  try {
+    const settings = await prisma.siteSetting.findMany()
+    const map = Object.fromEntries(settings.map(s => [s.key, s.value]))
+    return NextResponse.json(map)
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
+  }
 }
 
 export async function PUT(req: Request) {

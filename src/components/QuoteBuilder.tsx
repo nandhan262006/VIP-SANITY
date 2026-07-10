@@ -200,8 +200,8 @@ export default function QuoteBuilder({ sanitySteps }: { sanitySteps?: SanityStep
     if (!step) return false
     if (step.type === 'final') return form.accepted && form.name && form.phone && form.email
     if (step.type === 'welcome') return true
-    if (step.type === 'multi-quantity') return Object.values(qtys).some((v) => v > 0)
-    return Object.values(sels).some((v) => v > 0)
+    if (step.type === 'multi-quantity') return step.items.some((item) => (qtys[item.id] || 0) > 0)
+    return step.items.some((item) => (sels[item.id] || 0) > 0)
   }, [step, qtys, sels, form])
 
   const handleQty = useCallback((id: string, d: number) => {

@@ -98,14 +98,14 @@ export default function PortfolioAdminPage() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Portfolio</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homepage Grid</h1>
         <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); resetForm() }}>
           Add Item
         </Button>
       </div>
 
       <Modal show={showForm} onClose={() => setShowForm(false)} size="lg">
-        <ModalHeader>{editId ? 'Edit Portfolio Item' : 'New Portfolio Item'}</ModalHeader>
+        <ModalHeader>{editId ? 'Edit Homepage Grid Item' : 'New Homepage Grid Item'}</ModalHeader>
         <ModalBody>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div>

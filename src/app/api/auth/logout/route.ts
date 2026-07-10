@@ -11,5 +11,5 @@ export async function POST(request: Request) {
     path: '/',
   })
   const url = new URL('/admin/login', request.url)
-  return NextResponse.redirect(url)
+  return NextResponse.redirect(url, { status: 303 })
 }
