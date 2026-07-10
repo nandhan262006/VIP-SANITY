@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ServicesStack from '@/components/ServicesStack'
 import HeroSlider from '@/components/HeroSlider'
-import { getHeroSlides, getServices } from '@/lib/site'
+import { getHeroSlides, getServices, getStats, getAwards } from '@/lib/site'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -26,9 +26,11 @@ const fallbackGrid = [
 export default async function HomePage() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
 
-  const [slides, services] = await Promise.all([
+  const [slides, services, stats, awards] = await Promise.all([
     getHeroSlides(),
     getServices(),
+    getStats(),
+    getAwards(),
   ])
 
   let portfolioItems: { coverImage: string; title: string; slug: string }[] = []
@@ -174,6 +176,26 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {stats.length > 0 && (
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-6xl mx-auto text-center">
+            <span className="text-red font-semibold text-sm uppercase tracking-widest">By the Numbers</span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-3 mb-10 text-gray-900">
+              Trusted by <span className="text-red">Hundreds of Families</span>
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {stats.map((stat, i) => (
+                <div key={i} className="text-center p-6 rounded-xl bg-surface border border-gray-100">
+                  <div className="text-3xl md:text-5xl font-bold text-red mb-2">{stat.number}</div>
+                  <div className="font-semibold text-gray-900 text-sm mb-1">{stat.label}</div>
+                  <div className="text-gray-500 text-xs">{stat.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="py-24 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -229,37 +251,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 px-4 bg-white border-t border-gray-200">
-        <div className="max-w-6xl mx-auto text-center">
-          <span className="text-red font-semibold text-sm uppercase tracking-widest">Awards & Recognition</span>
-          <h2 className="text-3xl md:text-4xl font-bold mt-3 mb-6 text-gray-900">
-            Recognized as the <span className="text-red">Best Photographer in Nellore</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="p-6 rounded-xl bg-surface border border-gray-200">
-              <div className="text-red font-bold text-lg">National Award</div>
-              <p className="text-gray-900 font-semibold mt-2">Wedding Photography</p>
-              <p className="text-gray-500 text-sm mt-1">Government of India</p>
+      {awards.length > 0 && (
+        <section className="py-20 px-4 bg-white border-t border-gray-200">
+          <div className="max-w-6xl mx-auto text-center">
+            <span className="text-red font-semibold text-sm uppercase tracking-widest">Awards & Recognition</span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-3 mb-6 text-gray-900">
+              Recognized as the <span className="text-red">Best Photographer in Nellore</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              {awards.slice(0, 3).map((award, i) => (
+                <div key={i} className="p-6 rounded-xl bg-surface border border-gray-200">
+                  <div className="text-red font-bold text-lg">{award.year}</div>
+                  <p className="text-gray-900 font-semibold mt-2">{award.title}</p>
+                  <p className="text-gray-500 text-sm mt-1">{award.org}</p>
+                </div>
+              ))}
             </div>
-            <div className="p-6 rounded-xl bg-surface border border-gray-200">
-              <div className="text-red font-bold text-lg">2010</div>
-              <p className="text-gray-900 font-semibold mt-2">Wedding Photographer of the Year</p>
-              <p className="text-gray-500 text-sm mt-1">Kodak</p>
-            </div>
-            <div className="p-6 rounded-xl bg-surface border border-gray-200">
-              <div className="text-red font-bold text-lg">15+ Years</div>
-              <p className="text-gray-900 font-semibold mt-2">Award-Winning Excellence</p>
-              <p className="text-gray-500 text-sm mt-1">VIP Studio, Nellore</p>
-            </div>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 text-red font-medium hover:text-red-dark transition mt-8"
+            >
+              Meet the Best Photographer in Nellore <span aria-hidden="true">&rarr;</span>
+            </Link>
           </div>
-          <Link
-            href="/about"
-            className="inline-flex items-center gap-2 text-red font-medium hover:text-red-dark transition mt-8"
-          >
-            Meet the Best Photographer in Nellore <span aria-hidden="true">&rarr;</span>
-          </Link>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="py-24 px-4 bg-gradient-to-br from-gray-900 via-gray-900 to-red relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(204,0,0,0.15),transparent_60%)]" />
