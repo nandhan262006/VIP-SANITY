@@ -10,7 +10,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   if (!(await getSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const body = await req.json()
-  const item = await prisma.portfolioItem.create({ data: body })
-  return NextResponse.json(item)
+  try {
+    const body = await req.json()
+    const item = await prisma.portfolioItem.create({ data: body })
+    return NextResponse.json(item, { status: 201 })
+  } catch {
+    return NextResponse.json({ error: 'Failed to create portfolio item' }, { status: 500 })
+  }
 }

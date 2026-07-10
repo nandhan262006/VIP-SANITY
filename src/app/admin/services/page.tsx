@@ -34,6 +34,7 @@ export default function ServicesPage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const isEdit = !!editId
       const body = { ...form, order: 0, active: true }
       const url = editId ? `/api/admin/services/${editId}` : '/api/admin/services'
       const method = editId ? 'PUT' : 'POST'
@@ -42,7 +43,7 @@ export default function ServicesPage() {
       setShowForm(false); setEditId(null); setForm({ title: '', description: '', imageUrl: '' })
       const refreshed = await fetch('/api/admin/services')
       setItems(await refreshed.json())
-      showToast(editId ? 'Service updated' : 'Service created')
+      showToast(isEdit ? 'Service updated' : 'Service created')
     } catch {
       showToast('Failed to save', 'error')
     } finally {

@@ -10,14 +10,28 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   if (!(await getSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { id, read } = await req.json()
-  const contact = await prisma.contactSubmission.update({ where: { id }, data: { read } })
-  return NextResponse.json(contact)
+  try {
+    const { id, read } = await req.json()
+    if (typeof id !== 'number' || typeof read !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+    }
+    const contact = await prisma.contactSubmission.update({ where: { id }, data: { read } })
+    return NextResponse.json(contact)
+  } catch {
+    return NextResponse.json({ error: 'Failed to update contact' }, { status: 500 })
+  }
 }
 
 export async function DELETE(req: Request) {
   if (!(await getSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { id } = await req.json()
-  await prisma.contactSubmission.delete({ where: { id } })
-  return NextResponse.json({ success: true })
+  try {
+    const { id } = await req.json()
+    if (typeof id !== 'number') {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+    }
+    await prisma.contactSubmission.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch {
+    return NextResponse.json({ error: 'Failed to delete contact' }, { status: 500 })
+  }
 }

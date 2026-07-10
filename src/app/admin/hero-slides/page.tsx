@@ -34,6 +34,7 @@ export default function HeroSlidesPage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const isEdit = !!editId
       const body = { imageUrl, active: true, order: 0 }
       const url = editId ? `/api/admin/hero-slides/${editId}` : '/api/admin/hero-slides'
       const method = editId ? 'PUT' : 'POST'
@@ -42,7 +43,7 @@ export default function HeroSlidesPage() {
       setShowForm(false); setEditId(null); setImageUrl('')
       const refreshed = await fetch('/api/admin/hero-slides')
       setSlides(await refreshed.json())
-      showToast(editId ? 'Slide updated' : 'Slide created')
+      showToast(isEdit ? 'Slide updated' : 'Slide created')
     } catch {
       showToast('Failed to save', 'error')
     } finally {

@@ -33,6 +33,7 @@ export default function StatsPage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const isEdit = !!editId
       const body = { ...form, order: 0 }
       const url = editId ? `/api/admin/stats/${editId}` : '/api/admin/stats'
       const method = editId ? 'PUT' : 'POST'
@@ -41,7 +42,7 @@ export default function StatsPage() {
       setShowForm(false); setEditId(null); setForm({ number: '', label: '', desc: '' })
       const refreshed = await fetch('/api/admin/stats')
       setItems(await refreshed.json())
-      showToast(editId ? 'Stat updated' : 'Stat created')
+      showToast(isEdit ? 'Stat updated' : 'Stat created')
     } catch {
       showToast('Failed to save', 'error')
     } finally {

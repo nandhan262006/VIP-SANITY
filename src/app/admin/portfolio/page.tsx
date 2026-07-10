@@ -48,6 +48,7 @@ export default function PortfolioAdminPage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const isEdit = !!editId
       const body = { ...form, images: galleryImages.length > 0 ? JSON.stringify(galleryImages.map(g => g.url)) : form.images || null }
       const url = editId ? `/api/admin/portfolio/${editId}` : '/api/admin/portfolio'
       const method = editId ? 'PUT' : 'POST'
@@ -56,7 +57,7 @@ export default function PortfolioAdminPage() {
       setShowForm(false); setEditId(null); resetForm()
       const refreshed = await fetch('/api/admin/portfolio')
       setItems(await refreshed.json())
-      showToast(editId ? 'Portfolio item updated' : 'Portfolio item created')
+      showToast(isEdit ? 'Portfolio item updated' : 'Portfolio item created')
     } catch {
       showToast('Failed to save', 'error')
     } finally {
@@ -84,7 +85,8 @@ export default function PortfolioAdminPage() {
   function startEdit(s: Item) {
     setEditId(s.id)
     setForm({ slug: s.slug, title: s.title, description: s.description || '', category: s.category || '', coverImage: s.coverImage || '', coverImagePublicId: s.coverImagePublicId || '', date: s.date || '', images: s.images || '' })
-    const parsed = s.images ? JSON.parse(s.images) : []
+    let parsed: string[] = []
+    try { parsed = s.images ? JSON.parse(s.images) : [] } catch { parsed = [] }
     setGalleryImages(parsed.map((url: string) => ({ url, publicId: '' })))
     setShowForm(true)
   }

@@ -35,6 +35,7 @@ export default function GalleryPage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const isEdit = !!editId
       const body = { src: form.src, srcPublicId: form.srcPublicId, galleryTitle: form.galleryTitle, gallerySlug: form.gallerySlug, order: 0 }
       const url = editId ? `/api/admin/gallery/${editId}` : '/api/admin/gallery'
       const method = editId ? 'PUT' : 'POST'
@@ -43,7 +44,7 @@ export default function GalleryPage() {
       setShowForm(false); setEditId(null); setForm({ src: '', srcPublicId: '', galleryTitle: '', gallerySlug: '' })
       const refreshed = await fetch('/api/admin/gallery')
       setItems(await refreshed.json())
-      showToast(editId ? 'Image updated' : 'Image added')
+      showToast(isEdit ? 'Image updated' : 'Image added')
     } catch {
       showToast('Failed to save', 'error')
     } finally {
@@ -98,7 +99,10 @@ export default function GalleryPage() {
             </div>
             <div>
               <Label>Gallery Title</Label>
-              <TextInput value={form.galleryTitle} onChange={e => setForm(p => ({ ...p, galleryTitle: e.target.value }))} />
+              <TextInput value={form.galleryTitle} onChange={e => {
+                const title = e.target.value
+                setForm(p => ({ ...p, galleryTitle: title, gallerySlug: !editId ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : p.gallerySlug }))
+              }} />
             </div>
             <div>
               <Label>Gallery Slug</Label>
@@ -108,7 +112,7 @@ export default function GalleryPage() {
         </ModalBody>
         <ModalFooter>
           <Button color="gray" onClick={() => setShowForm(false)} disabled={saving}>Cancel</Button>
-          <Button color="red" onClick={handleSave} disabled={!form.src || !form.galleryTitle || saving}>
+          <Button color="red" onClick={handleSave} disabled={!form.src || !form.galleryTitle || !form.gallerySlug || saving}>
             {saving ? 'Saving...' : 'Save'}
           </Button>
         </ModalFooter>

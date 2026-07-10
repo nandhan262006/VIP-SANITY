@@ -33,6 +33,7 @@ export default function AwardsPage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const isEdit = !!editId
       const body = { ...form, order: 0 }
       const url = editId ? `/api/admin/awards/${editId}` : '/api/admin/awards'
       const method = editId ? 'PUT' : 'POST'
@@ -41,7 +42,7 @@ export default function AwardsPage() {
       setShowForm(false); setEditId(null); setForm({ year: '', title: '', org: '', description: '' })
       const refreshed = await fetch('/api/admin/awards')
       setItems(await refreshed.json())
-      showToast(editId ? 'Award updated' : 'Award created')
+      showToast(isEdit ? 'Award updated' : 'Award created')
     } catch {
       showToast('Failed to save', 'error')
     } finally {
