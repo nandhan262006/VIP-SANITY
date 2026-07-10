@@ -2,12 +2,39 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ServicesStack from '@/components/ServicesStack'
 import HeroSlider from '@/components/HeroSlider'
-import { getHeroSlides, getServices, getSiteSetting } from '@/lib/site'
+import { getHeroSlides, getServices } from '@/lib/site'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
 const WHATSAPP_NUMBER = '919299950999'
 const PHONE_NUMBER = '+919299950999'
+
+const SPANS = [
+  'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
+  '',
+  'row-span-2',
+  'col-span-2 md:col-span-2',
+  'row-span-2 md:row-span-2',
+  '',
+  '',
+  'col-span-2 md:col-span-2',
+  '',
+  '',
+]
+
+const fallbackGrid = [
+  { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', slug: 'bridal', span: SPANS[0] },
+  { src: '/CANDID.png', label: 'Candid Wedding Photography', slug: 'candid', span: SPANS[1] },
+  { src: '/ENGAGEMENT.png', label: 'Engagement Photography', slug: 'engagement', span: SPANS[2] },
+  { src: '/WEDDING.png', label: 'Wedding Cinematography', slug: 'wedding', span: SPANS[3] },
+  { src: '/PREWEDDING.png', label: 'Pre-Wedding Photography', slug: 'prewedding', span: SPANS[4] },
+  { src: '/CORPERATE.png', label: 'Event Photography', slug: 'events', span: SPANS[5] },
+  { src: '/MATERNITY.png', label: 'Maternity Photography', slug: 'maternity', span: SPANS[6] },
+  { src: '/HERO.png', label: 'Fashion Photography', slug: 'fashion', span: SPANS[7] },
+  { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', slug: 'bridal', span: SPANS[8] },
+  { src: '/CANDID.png', label: 'Candid Wedding Photography', slug: 'candid', span: SPANS[9] },
+]
 
 export default async function HomePage() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vipstudios.in'
@@ -16,6 +43,16 @@ export default async function HomePage() {
     getHeroSlides(),
     getServices(),
   ])
+
+  let portfolioItems: { coverImage: string; title: string; slug: string }[] = []
+  try {
+    const dbItems = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' }, take: 10 })
+    portfolioItems = dbItems.filter(p => p.coverImage).map(p => ({ coverImage: p.coverImage!, title: p.title, slug: p.slug }))
+  } catch {}
+
+  const gridItems: { src: string; label: string; slug: string; span: string }[] = portfolioItems.length > 0
+    ? portfolioItems.map((p, i) => ({ src: p.coverImage, label: p.title, slug: p.slug, span: SPANS[i] || '' }))
+    : fallbackGrid
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -84,21 +121,10 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[240px]">
-            {[
-              { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2' },
-              { src: '/CANDID.png', label: 'Candid Wedding Photography', span: '' },
-              { src: '/ENGAGEMENT.png', label: 'Engagement Photography', span: 'row-span-2' },
-              { src: '/WEDDING.png', label: 'Wedding Cinematography', span: 'col-span-2 md:col-span-2' },
-              { src: '/PREWEDDING.png', label: 'Pre-Wedding Photography', span: 'row-span-2 md:row-span-2' },
-              { src: '/CORPERATE.png', label: 'Event Photography', span: '' },
-              { src: '/MATERNITY.png', label: 'Maternity Photography', span: '' },
-              { src: '/HERO.png', label: 'Fashion Photography', span: 'col-span-2 md:col-span-2' },
-              { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', span: '' },
-              { src: '/CANDID.png', label: 'Candid Wedding Photography', span: '' },
-            ].map((item, i) => (
+            {gridItems.map((item, i) => (
               <Link
                 key={i}
-                href="/portfolio"
+                href={`/portfolio/${item.slug}`}
                 className={`group relative overflow-hidden rounded-xl bg-gray-200 ${item.span}`}
               >
                 <Image
