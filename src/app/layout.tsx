@@ -6,6 +6,8 @@ import PopupVideo from '@/components/PopupVideo'
 import { getPopupVideo } from '@/lib/site'
 import './globals.css'
 
+export const revalidate = 60
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 
+export const revalidate = 60
+
 const fallbackGalleries: Record<string, { title: string; categoryTitle: string; description: string; date: string; images: string[] }> = {
   bridal: { title: 'Bridal Photography', categoryTitle: 'Bridal', description: 'Elegant bridal portraits that capture every detail of your special day, from the intricate jewellery to the joyous tears.', date: '2025-12-01', images: ['/BRIDAL.png', '/BRIDAL.png', '/HERO.png'] },
   candid: { title: 'Candid Photography', categoryTitle: 'Candid', description: 'Natural, unposed moments that reflect genuine emotions — the laughter, the tears, the pure joy.', date: '2025-11-15', images: ['/CANDID.png', '/CANDID.png', '/HERO.png'] },

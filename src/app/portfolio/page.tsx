@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import PortfolioGrid from '@/components/PortfolioGrid'
 import { prisma } from '@/lib/prisma'
 
+export const revalidate = 60
+
 const defaultGalleries = [
   { _id: '1', slug: 'bridal', title: 'Bridal Photography', categoryTitle: 'Bridal', image: '/BRIDAL.png', date: '2025-12-01' },
   { _id: '2', slug: 'candid', title: 'Candid Photography', categoryTitle: 'Candid', image: '/CANDID.png', date: '2025-11-15' },
