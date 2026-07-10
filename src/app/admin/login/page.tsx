@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button, Card, Label, TextInput } from 'flowbite-react'
 import { ThemeModeScript } from 'flowbite-react'
 
@@ -9,7 +8,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -29,7 +27,7 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.push('/admin')
+      window.location.href = '/admin'
     } catch {
       setError('Something went wrong')
     } finally {

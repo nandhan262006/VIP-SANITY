@@ -5,7 +5,7 @@ import { verifyToken } from '@/lib/auth'
 const ADMIN_LOGIN = '/admin/login'
 const ADMIN_ROOT = '/admin'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!pathname.startsWith('/admin')) {
