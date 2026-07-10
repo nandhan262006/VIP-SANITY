@@ -35,7 +35,7 @@ export default function PortfolioAdminPage() {
   async function handleSave() {
     setSaving(true)
     try {
-      const body = { ...form, order: 0 }
+      const body = { ...form }
       const url = editId ? `/api/admin/portfolio/${editId}` : '/api/admin/portfolio'
       const method = editId ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
