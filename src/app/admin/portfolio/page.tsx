@@ -7,13 +7,17 @@ import FileUpload from '@/components/admin/FileUpload'
 import DeleteConfirm from '@/components/admin/DeleteConfirm'
 import Toast from '@/components/admin/Toast'
 
-type Item = { id: number; slug: string; title: string; description?: string; category?: string; coverImage?: string; coverImagePublicId?: string; date?: string }
+type GalleryImage = { url: string; publicId: string }
+type Item = { id: number; slug: string; title: string; description?: string; category?: string; coverImage?: string; coverImagePublicId?: string; date?: string; images?: string }
+
+const CATEGORIES = ['Bridal', 'Candid', 'Engagement', 'Wedding', 'Pre-Wedding', 'Events', 'Maternity', 'Fashion']
 
 export default function PortfolioAdminPage() {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '' })
+  const [form, setForm] = useState({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '', images: '' as string })
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
   const [editId, setEditId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
@@ -24,6 +28,11 @@ export default function PortfolioAdminPage() {
     setTimeout(() => setToast(null), 3000)
   }, [])
 
+  function resetForm() {
+    setForm({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '', images: '' })
+    setGalleryImages([])
+  }
+
   useEffect(() => {
     fetch('/api/admin/portfolio')
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
@@ -32,15 +41,19 @@ export default function PortfolioAdminPage() {
       .finally(() => setLoading(false))
   }, [showToast])
 
+  function autoSlug(title: string) {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  }
+
   async function handleSave() {
     setSaving(true)
     try {
-      const body = { ...form }
+      const body = { ...form, images: galleryImages.length > 0 ? JSON.stringify(galleryImages.map(g => g.url)) : form.images || null }
       const url = editId ? `/api/admin/portfolio/${editId}` : '/api/admin/portfolio'
       const method = editId ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) throw new Error()
-      setShowForm(false); setEditId(null); setForm({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '' })
+      setShowForm(false); setEditId(null); resetForm()
       const refreshed = await fetch('/api/admin/portfolio')
       setItems(await refreshed.json())
       showToast(editId ? 'Portfolio item updated' : 'Portfolio item created')
@@ -70,7 +83,9 @@ export default function PortfolioAdminPage() {
 
   function startEdit(s: Item) {
     setEditId(s.id)
-    setForm({ slug: s.slug, title: s.title, description: s.description || '', category: s.category || '', coverImage: s.coverImage || '', coverImagePublicId: s.coverImagePublicId || '', date: s.date || '' })
+    setForm({ slug: s.slug, title: s.title, description: s.description || '', category: s.category || '', coverImage: s.coverImage || '', coverImagePublicId: s.coverImagePublicId || '', date: s.date || '', images: s.images || '' })
+    const parsed = s.images ? JSON.parse(s.images) : []
+    setGalleryImages(parsed.map((url: string) => ({ url, publicId: '' })))
     setShowForm(true)
   }
 
@@ -82,7 +97,7 @@ export default function PortfolioAdminPage() {
 
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Portfolio</h1>
-        <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); setForm({ slug: '', title: '', description: '', category: '', coverImage: '', coverImagePublicId: '', date: '' }) }}>
+        <Button color="red" size="sm" onClick={() => { setShowForm(true); setEditId(null); resetForm() }}>
           Add Item
         </Button>
       </div>
@@ -93,34 +108,80 @@ export default function PortfolioAdminPage() {
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div>
               <Label>Title</Label>
-              <TextInput value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
+              <TextInput value={form.title} onChange={e => {
+                const title = e.target.value
+                setForm(p => ({ ...p, title, slug: !editId ? autoSlug(title) : p.slug }))
+              }} placeholder="e.g. Priya & Rahul Wedding" />
             </div>
             <div>
-              <Label>Slug</Label>
-              <TextInput value={form.slug} onChange={e => setForm(p => ({ ...p, slug: e.target.value }))} />
+              <Label>Slug <span className="text-gray-400 font-normal">(URL-friendly id)</span></Label>
+              <TextInput value={form.slug} onChange={e => setForm(p => ({ ...p, slug: e.target.value }))} placeholder="e.g. priya-rahul-wedding" />
+              <p className="text-xs text-gray-400 mt-1">Auto-generated from title. Used in URL: /portfolio/{form.slug || '...'}</p>
             </div>
             <div>
               <Label>Category</Label>
-              <TextInput value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} />
+              <div className="flex flex-wrap gap-2 mt-1">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, category: p.category === cat ? '' : cat }))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      form.category === cat ? 'bg-red text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <Label>Description</Label>
-              <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+              <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Brief description of this shoot..." />
             </div>
             <div>
               <Label>Date</Label>
-              <TextInput value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} placeholder="2025-12-01" />
+              <TextInput value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} placeholder="e.g. 2025-12-01 or December 2025" />
             </div>
-            <FileUpload currentUrl={form.coverImage} onUpload={(url, publicId) => setForm(p => ({ ...p, coverImage: url, coverImagePublicId: publicId || '' }))} />
-            <div>
-              <Label>Or Cover Image URL</Label>
-              <TextInput value={form.coverImage} onChange={e => setForm(p => ({ ...p, coverImage: e.target.value, coverImagePublicId: '' }))} />
-            </div>
-            {form.coverImage && (
-              <div className="relative w-full h-28 rounded-lg overflow-hidden bg-gray-100">
-                <Image src={form.coverImage} alt="" fill className="object-cover" />
+
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+              <Label className="text-base font-semibold">Cover Image <span className="text-gray-400 font-normal">(thumbnail on listing page)</span></Label>
+              <div className="mt-2">
+                <FileUpload currentUrl={form.coverImage} onUpload={(url, publicId) => setForm(p => ({ ...p, coverImage: url, coverImagePublicId: publicId || '' }))} />
               </div>
-            )}
+              <div className="mt-2">
+                <Label className="text-xs text-gray-400">Or paste image URL</Label>
+                <TextInput value={form.coverImage} onChange={e => setForm(p => ({ ...p, coverImage: e.target.value, coverImagePublicId: '' }))} placeholder="https://..." />
+              </div>
+              {form.coverImage && (
+                <div className="relative w-full h-32 mt-2 rounded-lg overflow-hidden bg-gray-100">
+                  <Image src={form.coverImage} alt="Cover preview" fill className="object-cover" />
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+              <Label className="text-base font-semibold">Gallery Images <span className="text-gray-400 font-normal">(shown on detail page /portfolio/{form.slug || '...'})</span></Label>
+              <p className="text-xs text-gray-400 mt-1 mb-3">Upload multiple images for this portfolio gallery. They appear in order on the detail page.</p>
+              <div className="space-y-2">
+                {galleryImages.map((img, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="relative w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                      <Image src={img.url} alt="" fill className="object-cover" />
+                    </div>
+                    <span className="text-xs text-gray-400 truncate flex-1">{img.url}</span>
+                    <button type="button" onClick={() => setGalleryImages(p => p.filter((_, idx) => idx !== i))} className="text-xs text-red-500 hover:underline flex-shrink-0">Remove</button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2">
+                <FileUpload
+                  label="Add gallery image"
+                  currentUrl=""
+                  onUpload={(url, publicId) => setGalleryImages(p => [...p, { url, publicId: publicId || '' }])}
+                />
+              </div>
+            </div>
           </div>
         </ModalBody>
         <ModalFooter>
