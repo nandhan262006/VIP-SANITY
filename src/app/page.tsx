@@ -10,30 +10,17 @@ export const dynamic = 'force-dynamic'
 const WHATSAPP_NUMBER = '919299950999'
 const PHONE_NUMBER = '+919299950999'
 
-const SPANS = [
-  'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
-  '',
-  'row-span-2',
-  'col-span-2 md:col-span-2',
-  'row-span-2 md:row-span-2',
-  '',
-  '',
-  'col-span-2 md:col-span-2',
-  '',
-  '',
-]
-
 const fallbackGrid = [
-  { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', slug: 'bridal', span: SPANS[0] },
-  { src: '/CANDID.png', label: 'Candid Wedding Photography', slug: 'candid', span: SPANS[1] },
-  { src: '/ENGAGEMENT.png', label: 'Engagement Photography', slug: 'engagement', span: SPANS[2] },
-  { src: '/WEDDING.png', label: 'Wedding Cinematography', slug: 'wedding', span: SPANS[3] },
-  { src: '/PREWEDDING.png', label: 'Pre-Wedding Photography', slug: 'prewedding', span: SPANS[4] },
-  { src: '/CORPERATE.png', label: 'Event Photography', slug: 'events', span: SPANS[5] },
-  { src: '/MATERNITY.png', label: 'Maternity Photography', slug: 'maternity', span: SPANS[6] },
-  { src: '/HERO.png', label: 'Fashion Photography', slug: 'fashion', span: SPANS[7] },
-  { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', slug: 'bridal', span: SPANS[8] },
-  { src: '/CANDID.png', label: 'Candid Wedding Photography', slug: 'candid', span: SPANS[9] },
+  { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', slug: 'bridal' },
+  { src: '/CANDID.png', label: 'Candid Wedding Photography', slug: 'candid' },
+  { src: '/ENGAGEMENT.png', label: 'Engagement Photography', slug: 'engagement' },
+  { src: '/WEDDING.png', label: 'Wedding Cinematography', slug: 'wedding' },
+  { src: '/PREWEDDING.png', label: 'Pre-Wedding Photography', slug: 'prewedding' },
+  { src: '/CORPERATE.png', label: 'Event Photography', slug: 'events' },
+  { src: '/MATERNITY.png', label: 'Maternity Photography', slug: 'maternity' },
+  { src: '/HERO.png', label: 'Fashion Photography', slug: 'fashion' },
+  { src: '/BRIDAL.png', label: 'Bridal Wedding Photography', slug: 'bridal' },
+  { src: '/CANDID.png', label: 'Candid Wedding Photography', slug: 'candid' },
 ]
 
 export default async function HomePage() {
@@ -50,9 +37,12 @@ export default async function HomePage() {
     portfolioItems = dbItems.filter(p => p.coverImage).map(p => ({ coverImage: p.coverImage!, title: p.title, slug: p.slug }))
   } catch {}
 
-  const gridItems: { src: string; label: string; slug: string; span: string }[] = portfolioItems.length > 0
-    ? portfolioItems.map((p, i) => ({ src: p.coverImage, label: p.title, slug: p.slug, span: SPANS[i] || '' }))
+  const gridItems: { src: string; label: string; slug: string }[] = portfolioItems.length > 0
+    ? portfolioItems.map(p => ({ src: p.coverImage, label: p.title, slug: p.slug }))
     : fallbackGrid
+
+  const mainGrid = gridItems.slice(0, 9)
+  const extraItem = gridItems[9] || null
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -120,19 +110,19 @@ export default async function HomePage() {
               View All <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[240px]">
-            {gridItems.map((item, i) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {mainGrid.map((item, i) => (
               <Link
                 key={i}
                 href={`/portfolio/${item.slug}`}
-                className={`group relative overflow-hidden rounded-xl bg-gray-200 ${item.span}`}
+                className="group relative aspect-square overflow-hidden rounded-xl bg-gray-200"
               >
                 <Image
                   src={item.src}
                   alt={item.label}
                   fill
                   className="object-cover group-hover:scale-105 transition duration-700"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  sizes="(max-width: 768px) 50vw, 33vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white translate-y-2 group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
@@ -144,6 +134,27 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+          {extraItem && (
+            <Link
+              href={`/portfolio/${extraItem.slug}`}
+              className="group relative block w-full h-[300px] md:h-[400px] mt-3 overflow-hidden rounded-xl bg-gray-200"
+            >
+              <Image
+                src={extraItem.src}
+                alt={extraItem.label}
+                fill
+                className="object-cover group-hover:scale-105 transition duration-700"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white translate-y-2 group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
+                <h3 className="font-semibold text-lg">{extraItem.label}</h3>
+              </div>
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-gray-900 text-sm font-medium px-4 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition duration-300">
+                {extraItem.label}
+              </div>
+            </Link>
+          )}
           <div className="text-center mt-10 space-y-4">
             <Link
               href="/portfolio"
