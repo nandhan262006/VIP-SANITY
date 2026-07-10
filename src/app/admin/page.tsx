@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { Card } from 'flowbite-react'
 import { HiPhoto, HiCog6Tooth, HiBriefcase, HiCube, HiEnvelope, HiBellAlert } from 'react-icons/hi2'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboardPage() {
   const [contactCount, unreadCount, portfolioCount, slideCount, serviceCount, galleryCount] = await Promise.all([
     prisma.contactSubmission.count(),
