@@ -236,9 +236,16 @@ export default function QuoteBuilder({ sanitySteps }: { sanitySteps?: SanityStep
     if (stepIdx > 0) { setStepIdx((i) => i - 1) }
   }, [stepIdx])
 
-  const doPdf = useCallback(() => {
+  const doPdf = useCallback(async () => {
     const doc = buildPdf(form, total, summary)
     doc.save(`TBD-Quote-${form.name.replace(/\s+/g, '-') || 'quote'}.pdf`)
+    try {
+      await fetch('/api/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, date: form.date, venue: form.venue, total, summary }),
+      })
+    } catch {}
   }, [form, total, summary])
 
   const doWhatsApp = useCallback(() => {
